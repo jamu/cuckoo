@@ -16,7 +16,7 @@ class IE(Package):
 
     def start(self, url):
         free = self.options.get("free", False)
-        dll = self.options.get("dll",None)
+        dll = self.options.get("dll")
         suspended = True
         if free:
             suspended = False
