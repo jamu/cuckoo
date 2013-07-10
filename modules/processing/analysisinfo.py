@@ -40,5 +40,11 @@ class AnalysisInfo(Processing):
             "id" : int(self.task["id"]),
             "category" : self.task["category"]
         }
+        log.debug("options: %s" %self.task["options"])
+        if "dll=" in self.task["options"]:
+            dll = self.task["options"].split("dll=")
+            if len(dll)>1:
+                if dll[1].startswith("MCEDP.dll"):
+                    info["dll"] = "MCEDP"
 
         return info
