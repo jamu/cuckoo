@@ -15,5 +15,8 @@
     {% include "sections/dropped.html" %}
     {% include "sections/network.html" %}
     {% include "sections/behavior.html" %}
+    {% if results.info.dll == "MCEDP" %}
+        {% include "sections/pwnypot.html" %} 
+    {% endif %}
     {% include "sections/volatility.html" %} 
 {% endblock %}
