@@ -198,20 +198,25 @@ class PipeHandler(Thread):
                 data = command[8:]
 
                 process_id = thread_id = None
+                dll = os.path.join("dll", "cuckoomon.dll")
                 if not "," in data:
                     if data.isdigit():
                         process_id = int(data)
                 elif len(data.split(",")) == 2:
-                    process_id, thread_id = data.split(",")
+                    process_id, param = data.split(",")
                     if process_id.isdigit():
                         process_id = int(process_id)
                     else:
                         process_id = None
 
-                    if thread_id.isdigit():
-                        thread_id = int(thread_id)
+                    if param.isdigit():
+                        thread_id = int(param)                    
                     else:
                         thread_id = None
+                        if isinstance(param, str):                        
+                            if "MCEDP.dll" in param:
+                                dll = os.path.join("dll", "MCEDP.dll")                        
+
 
                 if process_id:
                     if process_id not in (PID, PPID):
@@ -236,12 +241,12 @@ class PipeHandler(Thread):
                                 # If we have both pid and tid, then we can use
                                 # apc to inject
                                 if process_id and thread_id:
-                                    proc.inject(apc=True)
+                                    proc.inject(dll, True)
                                 else:
                                     # we inject using CreateRemoteThread, this
                                     # needs the waiting in order to make sure no
                                     # race conditions occur
-                                    proc.inject()
+                                    proc.inject(dll)
                                     wait = True
 
                                 log.info("Successfully injected process with pid %s", proc.pid)
