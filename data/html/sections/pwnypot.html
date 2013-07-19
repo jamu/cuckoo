@@ -2,4 +2,68 @@
     <div class="section-title">
         <h4>pwnypot Analysis</h4>
     </div>
+        {% if results.pwnypot %}
+
+            {% if results.pwnypot.binaries %}
+            <div>
+                <div id="pwnypot_shellcodes">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Detected Shellcodes</th>
+                        </tr>
+                        {% for key,value in results.pwnypot.binaries.iteritems() %}
+                        <tr>
+                            <td>
+                                <h4><a href="javascript:showHide('bin_{{key}}');">{{key}}</a></h4>
+                                <div id="bin_{{key}}" style="display: none;">
+                                    <table>
+                                        <tr>
+                                            <td><h5>Filetype:</h5> {{results.pwnypot.binaries[key]["type"]}}</td>
+                                            <td><h5>Filesize:</h5> {{results.pwnypot.binaries[key]["size"]}} bytes </td>
+                                            <td><h5>Sha-1:</h5> {{results.pwnypot.binaries[key]["sha1"]}}</td>
+                                            <td><h5>Analysis:</h5> <span class="mono"><pre>{{results.pwnypot.binaries[key]["xml"]}}</pre></span></td>
+                                        </tr>
+                                    </table>
+                                    <table>
+                                        <tr>
+                                            <td><h5>Disassembled:</h5><br><span class="mono"><pre>{{results.pwnypot.binaries[key]["disass"]}}</pre></span></td>
+                                        </tr>
+                                    </table>
+                                </div>                           
+                            </td>                        
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>        
+            {% endif %}
+
+
+            {% if results.pwnypot.log_files %}
+            <div>
+                <div id="pwnypot_logs">
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Log-Files</th>
+                        </tr>
+                        {% for key,value in results.pwnypot.log_files.iteritems() %}
+                        <tr>
+                            <td>
+                                <h4><a href="javascript:showHide('log_{{key}}');">{{key}}</a></h4>
+                                <div id="log_{{key}}" style="display: none;">
+                                    <table class="table table-striped table-bordered">
+                                        <tr>
+                                            <td><span class="mono"><pre>{{results.pwnypot.log_files[key]}}</pre></span></td>
+                                        </tr>
+                                    </table>
+                                </div>                            
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>        
+            {% endif %}    
+
+        {% endif %}
 </section>
