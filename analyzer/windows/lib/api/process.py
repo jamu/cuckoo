@@ -307,7 +307,6 @@ class Process:
         config_path = os.path.join(os.getenv("TEMP"), "%s.ini" % self.pid)
         with open(config_path, "w") as config:
             cfg = Config("analysis.conf")
-            #pwny_cfg = Config(os.path.join(CUCKOO_ROOT, "conf", "pwnypot.conf"))
 
             config.write("host-ip={0}\n".format(cfg.ip))
             config.write("host-port={0}\n".format(cfg.port))
@@ -315,13 +314,6 @@ class Process:
             config.write("results={0}\n".format(PATHS["root"]))
             config.write("analyzer={0}\n".format(os.getcwd()))
             config.write("first-process={0}\n".format(Process.first_process))
-            exec_malware = 0
-            res = cfg.options.split("exec_malware=")
-            if len(res)==2:
-                if res[1].startswith("1"):
-                    exec_malware = 1
-            #log.debug("mw option: %s " % pwny_cfg.Shellcode.MalwareExecution)
-            config.write("exec-malware={0}\n".format(exec_malware))
             Process.first_process = False
 
         if apc or self.suspended:

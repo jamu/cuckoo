@@ -154,6 +154,19 @@ class AnalysisManager(Thread):
             options["file_name"] = File(self.task.target).get_name()
             options["file_type"] = File(self.task.target).get_type()
 
+        # load PwnyPot configuration if we are using MCEDP.dll
+        # therefore load each value of each section into options dict
+        if "MCEDP.dll" in self.task.options:
+            cfg = Config(os.path.join(CUCKOO_ROOT, "conf", "pwnypot.conf"))
+            sections = ["global", "general", "shellcode", "rop", "memory"]
+            for s in sections:
+                vals = cfg.get(s)
+                for key, val in vals.items():
+                    if type(val) == bool:
+                        options[key] = int(val)
+                    else:
+                        options[key] = val
+
         return options
 
     def launch_analysis(self):
