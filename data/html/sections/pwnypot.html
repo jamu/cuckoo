@@ -43,16 +43,36 @@
                                             </tr>
                                         </table>
                                         <table class="table table-striped table-bordered">
-                                            {% if results.pwnypot.binaries[key]["xml_exec"] %}
+                                            {% for exec in results.pwnypot.binaries[key]["execs"] %}
                                             <tr>
-                                                <td><h5>Cmds Executed:</h5></td><td><span class="mono"><pre>{{results.pwnypot.binaries[key]["xml_exec"]}}</pre></span></td>                                           
+                                                <td><h5>Cmds Executed:</h5></td><td><span class="mono"><pre>{{exec}}</pre></span></td>                                           
                                             </tr>
-                                            {% endif %}
-                                            {% if results.pwnypot.binaries[key]["xml_socket"] %}
+                                            {% endfor %}
+                                            {% for download in results.pwnypot.binaries[key]["downloads"] %}
                                             <tr>
-                                                <td><h5>Sockets:</h5></td><td><span class="mono"><pre>{{results.pwnypot.binaries[key]["xml_socket"]}}</pre></span></td>                                            
+                                                <td><h5>Downloads:</h5></td><td><span class="mono"><pre>{{download}}</pre></span></td>                                            
                                             </tr>
-                                            {% endif %}
+                                            {% endfor %}
+                                            {% for socket in results.pwnypot.binaries[key]["sockets"] %}
+                                            <tr>
+                                                <td><h5>Sockets:</h5></td><td><span class="mono"><pre>{{socket}}</pre></span></td>                                            
+                                            </tr>
+                                            {% endfor %}
+                                            {% for connection in results.pwnypot.binaries[key]["connects"] %}
+                                            <tr>
+                                                <td><h5>Connect:</h5></td><td><span class="mono"><pre>{{connection}}</pre></span></td>                                            
+                                            </tr>
+                                            {% endfor %}
+                                            {% for listen in results.pwnypot.binaries[key]["listens"] %}
+                                            <tr>
+                                                <td><h5>Listen:</h5></td><td><span class="mono"><pre>{{listen}}</pre></span></td>                                            
+                                            </tr>
+                                            {% endfor %}
+                                            {% for bind in results.pwnypot.binaries[key]["binds"] %}
+                                            <tr>
+                                                <td><h5>Bind:</h5></td><td><span class="mono"><pre>{{bind}}</pre></span></td>                                            
+                                            </tr>
+                                            {% endfor %}
                                         </table>
                                         <h5><a href="javascript:showHide('dis_{{key}}');">Disassembled Shellcode:</a></h5>
                                         <div id="dis_{{key}}" style="display: none;">

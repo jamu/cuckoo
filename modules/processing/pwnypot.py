@@ -11,11 +11,17 @@ import xml.etree.ElementTree as ET
 import logging
 log = logging.getLogger(__name__)
 
+# analysis information types as defined in PwnyPot (Hook.cpp)
 ROP = "0"
 EXEC = "1"
 URL_DOWNLOAD_TO_FILE = "2"
 SOCKET = "3"
-
+CONNECT = "4"
+LISTEN = "5"
+BIND = "6"
+ACCEPT = "7"
+SEND = "8"
+RECV = "9"
 
 class Pwnypot(Processing):
     """Analysis of all files received by MCEDP.dll."""
@@ -54,10 +60,19 @@ class Pwnypot(Processing):
                             fd.close()
 
                         xml_path = os.path.join(dir_name,file_name.replace(".bin","Analysis.xml"))
-                        rop_chains = []
+
                         if os.path.exists(xml_path):
                             tree = ET.parse(xml_path)
                             xml = tree.getroot()
+                            binaries[file_name]["rop_chains"] = []
+                            binaries[file_name]["execs"] = []
+                            binaries[file_name]["downloads"] = []
+                            binaries[file_name]["sockets"] = []
+                            binaries[file_name]["connects"] = []
+                            binaries[file_name]["listens"] = []
+                            binaries[file_name]["binds"] = []
+                            binaries[file_name]["sends"] = []
+                            binaries[file_name]["recvs"] = []
                             for row in xml.iter("row"):
                                 if row.attrib.get('type') == ROP:
                                     rop = {}
@@ -71,15 +86,27 @@ class Pwnypot(Processing):
                                             gadget["instructions"] = g[0].text
                                             rop_gadgets.append(gadget)
                                     rop["gadgets"] = rop_gadgets
-                                    rop_chains.append(rop)
+                                    binaries[file_name]["rop_chains"].append(rop)
 
                                 if row.attrib.get('type') == EXEC:
-                                    binaries[file_name]["xml_exec"] = "Executing Command: %s" % row.attrib["exec_cmd"]
+                                    binaries[file_name]["execs"].append("Executing Command: %s" % row.attrib["exec_cmd"])
+
+                                if row.attrib.get('type') == URL_DOWNLOAD_TO_FILE:
+                                    binaries[file_name]["downloads"].append("Download url: %s filename: %s" % (row.attrib["download_url"], row.attrib["download_filename"]))
 
                                 if row.attrib.get('type') == SOCKET:
-                                    binaries[file_name]["xml_socket"] = "Socket created: %s type: %s" % (row.attrib["AF"], row.attrib["socket_type"])
+                                    binaries[file_name]["sockets"].append("Socket created: %s type: %s" % (row.attrib["AF"], row.attrib["socket_type"]))
 
-                        binaries[file_name]["rop_chains"] = rop_chains
+                                if row.attrib.get('type') == CONNECT:
+                                    binaries[file_name]["connects"].append("Connect to %s:%s" % (row.attrib["connect_ip"], row.attrib["connect_port"]))
+
+                                if row.attrib.get('type') == LISTEN:
+                                    binaries[file_name]["listens"].append("Listening: %s" % (row[0].text))
+
+                                if row.attrib.get('type') == BIND:
+                                    binaries[file_name]["binds"].append("Binding on %s:%s" % (row.attrib["bind_ip"], row.attrib["bind_port"]))
+
+
                         log_path = os.path.join(dir_name,file_name.replace("Shellcode.bin","LogShellcode.txt"))
                         if os.path.exists(log_path):
                             fd = open(log_path, "r")
