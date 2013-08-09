@@ -102,7 +102,7 @@ class Pwnypot(Processing):
                                             for i in range(1,5):
                                                 try:
                                                     char = value[i*2:2+i*2].decode("hex").encode("utf-8")
-                                                    if char in string.printable[:len(string.printable)-2] and char!=" ":
+                                                    if char in string.printable[:len(string.printable)-2] and char!=" " and value[i*2:2+i*2]!="0A":
                                                         ascii += char
                                                     else:
                                                         ascii += "."
@@ -140,6 +140,7 @@ class Pwnypot(Processing):
 
                             if row.attrib.get('type') == SEND:
                                 binaries[file_name]["connections"][row.attrib.get("socket")]["send"] = {"ip":row.attrib.get("send_ip"), "port": row.attrib.get("send_port")}
+                                # check for existing network dump
                                 dump_path = os.path.join(dir_name, file_name.replace("Shellcode.bin", "dump-%s.txt" %(row.attrib.get("data_uid"))))
                                 if os.path.exists(dump_path):
                                     fd = open(dump_path,"r")
@@ -152,6 +153,7 @@ class Pwnypot(Processing):
 
                             if row.attrib.get('type') == RECV:
                                 binaries[file_name]["connections"][row.attrib.get("socket")]["recv"] = {"ip":row.attrib.get("recv_ip"), "port": row.attrib.get("recv_port")}
+                                # check for existing network dump
                                 dump_path = os.path.join(dir_name, file_name.replace("Shellcode.bin", "dump-%s.txt" %(row.attrib.get("data_uid"))))
                                 if os.path.exists(dump_path):
                                     fd = open(dump_path,"r")

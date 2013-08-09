@@ -16,6 +16,7 @@
                             <td>
                                 <h4><a href="javascript:showHide('bin_{{key}}');">{{results.pwnypot.binaries[key].pid}}</a></h4>
                                 <div id="bin_{{key}}" style="display: none;">
+                                    {% if results.pwnypot.binaries[key]["rop_chains"] != None %}
                                     <h5><a href="javascript:showHide('rop_{{key}}');">ROP Analysis</a></h5>                                    
                                     <div id="rop_{{key}}" style="display: none;">
                                         {% for chain in results.pwnypot.binaries[key]["rop_chains"] %}
@@ -30,17 +31,20 @@
                                                     </pre>
                                                 </td>
                                             </tr>
+                                            {% if gadget.stack_values %}
                                             <tr>
                                                 <td>Addresses outside of the Module</td>
                                                 <td><pre>{% for s in gadget.stack_values %}[ {{s[0]}} ]&#9;&#9;&#9;&#9;DB  {{s[1]}}&#9;&#9;&#9;&#9;{{s[2]}}<br>{% endfor %}
                                                     </pre>
                                                 </td>
                                             </tr>
+                                            {% endif %}
                                             {% endfor %}
 
                                         </table>
                                         {% endfor %}
                                     </div>
+                                    {% endif %}
                                     {% if results.pwnypot.binaries[key]["shellcode"] != None %}
                                     <h5><a href="javascript:showHide('sc_{{key}}');">Shellcode Analysis</a></h5>
                                     <div id="sc_{{key}}" style="display: none;">
