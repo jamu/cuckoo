@@ -64,39 +64,14 @@
                                                 <td><h5>Downloads:</h5></td><td><span class="mono"><pre>{{download}}</pre></span></td>                                            
                                             </tr>
                                             {% endfor %}
-                                            {% for socket in results.pwnypot.binaries[key]["sockets"] %}
+                                            {% for key,value in results.pwnypot.binaries[key]["connections"].iteritems() %}
                                             <tr>
-                                                <td><h5>Sockets:</h5></td><td><span class="mono"><pre>{{socket}}</pre></span></td>                                            
-                                            </tr>
-                                            {% endfor %}
-                                            {% for connection in results.pwnypot.binaries[key]["connects"] %}
-                                            <tr>
-                                                <td><h5>Connect:</h5></td><td><span class="mono"><pre>{{connection}}</pre></span></td>                                            
-                                            </tr>
-                                            {% endfor %}
-                                            {% for listen in results.pwnypot.binaries[key]["listens"] %}
-                                            <tr>
-                                                <td><h5>Listen:</h5></td><td><span class="mono"><pre>{{listen}}</pre></span></td>                                            
-                                            </tr>
-                                            {% endfor %}
-                                            {% for bind in results.pwnypot.binaries[key]["binds"] %}
-                                            <tr>
-                                                <td><h5>Bind:</h5></td><td><span class="mono"><pre>{{bind}}</pre></span></td>                                            
-                                            </tr>
-                                            {% endfor %}
-                                            {% for accept in results.pwnypot.binaries[key]["accepts"] %}
-                                            <tr>
-                                                <td><h5>Accept:</h5></td><td><span class="mono"><pre>{{accept}}</pre></span></td>                                            
-                                            </tr>
-                                            {% endfor %}
-                                            {% for send in results.pwnypot.binaries[key]["sends"] %}
-                                            <tr>
-                                                <td><h5>Send:</h5></td><td><span class="mono"><pre>{{send["msg"]}}</pre><br><pre>{{send["dump"]}}</pre></span></td>                                            
-                                            </tr>
-                                            {% endfor %}
-                                            {% for recv in results.pwnypot.binaries[key]["recvs"] %}
-                                            <tr>
-                                                <td><h5>Recv:</h5></td><td><span class="mono"><pre>{{recv["msg"]}}</pre><br><pre>{{recv["dump"]}}</pre></span></td>                                            
+                                                <td><h5>Network action on Socket {{key}}:</h5></td><td><span class="mono">
+                                                {% for key2,value2 in value.iteritems() %}
+                                                    <h6>{{key2}}</h6>
+                                                    <pre>{% for key3, value3 in value2.iteritems() %}{{key3}}:{{value3}}<br>{% endfor %}</pre>
+                                                {% endfor %}
+                                                </span></td>                                            
                                             </tr>
                                             {% endfor %}
                                         </table>
