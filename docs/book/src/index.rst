@@ -34,4 +34,5 @@ Contents
     usage/index
     customization/index
     development/index
+    pwnypot/index
     finalremarks/index
