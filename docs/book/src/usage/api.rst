@@ -84,6 +84,7 @@ Following is a list of currently available resources and a brief description. Fo
             * ``options`` *(optional)* - options to pass to the analysis package
             * ``machine`` *(optional)* - ID of the analysis machine to use for the analysis
             * ``platform`` *(optional)* - name of the platform to select the analysis machine from (e.g. "windows")
+            * ``tags`` *(optional)* - define machine to start by tags. Platform must be set to use that. Tags are comma separated
             * ``custom`` *(optional)* - custom string to pass over the analysis and the processing/reporting modules
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
@@ -158,7 +159,8 @@ Following is a list of currently available resources and a brief description. Fo
                         "status": "pending", 
                         "enforce_timeout": false, 
                         "timeout": 0, 
-                        "memory": false, 
+                        "memory": false,
+                        "tags": []
                         "id": 1, 
                         "added_on": "2012-12-19 14:18:25", 
                         "completed_on": null
@@ -178,7 +180,11 @@ Following is a list of currently available resources and a brief description. Fo
                         "status": "pending", 
                         "enforce_timeout": false, 
                         "timeout": 0, 
-                        "memory": false, 
+                        "memory": false,
+                        "tags": [
+                                    "32bit",
+                                    "acrobat_6",
+                                ],
                         "id": 2, 
                         "added_on": "2012-12-19 14:18:25", 
                         "completed_on": null
@@ -225,7 +231,11 @@ Following is a list of currently available resources and a brief description. Fo
                         "status": "pending", 
                         "enforce_timeout": false, 
                         "timeout": 0, 
-                        "memory": false, 
+                        "memory": false,
+                        "tags": [
+                                    "32bit",
+                                    "acrobat_6",
+                                ],
                         "id": 1, 
                         "added_on": "2012-12-19 14:18:25", 
                         "completed_on": null
@@ -364,7 +374,11 @@ Following is a list of currently available resources and a brief description. Fo
                         "status": null, 
                         "locked": false, 
                         "name": "cuckoo1", 
-                        "ip": "192.168.56.101", 
+                        "ip": "192.168.56.101",
+                        "tags": [
+                                    "32bit",
+                                    "acrobat_6",
+                                ],
                         "label": "cuckoo1", 
                         "locked_changed_on": null, 
                         "platform": "windows", 
@@ -398,7 +412,11 @@ Following is a list of currently available resources and a brief description. Fo
                         "status": null, 
                         "locked": false, 
                         "name": "cuckoo1", 
-                        "ip": "192.168.56.101", 
+                        "ip": "192.168.56.101",
+                        "tags": [
+                                    "32bit",
+                                    "acrobat_6",
+                                ],
                         "label": "cuckoo1", 
                         "locked_changed_on": null, 
                         "platform": "windows", 

@@ -9,6 +9,7 @@ import logging
 import argparse
 
 logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger()
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 
@@ -27,10 +28,16 @@ def main():
 
     results = RunProcessing(task_id=args.id).run()
     RunSignatures(results=results).run()
-    
+
     if args.report:
         RunReporting(task_id=args.id, results=results).run()
         Database().set_status(args.id, TASK_REPORTED)
+
+    for proc in results["behavior"]["processes"]:
+        log.debug("Process %d (%s) log parsed %d times.",
+                  proc["process_id"],
+                  proc["process_name"],
+                  proc["calls"].parsecount)
 
 if __name__ == "__main__":
     main()

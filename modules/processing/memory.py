@@ -6,7 +6,6 @@ import os
 import logging
 
 from lib.cuckoo.common.abstracts import Processing
-from lib.cuckoo.common.utils import convert_to_printable, logtime
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.config import Config
 
@@ -184,10 +183,10 @@ class VolatilityAPI(object):
 
             for module in task.get_load_modules():
                 new["loaded_modules"].append({
-                    "dll_base": str(m.DllBase),
-                    "dll_size": str(m.SizeOfImage),
-                    "dll_full_name": str(m.FullDllName or ""),
-                    "dll_load_count": int(m.LoadCount),
+                    "dll_base": str(module.DllBase),
+                    "dll_size": str(module.SizeOfImage),
+                    "dll_full_name": str(module.FullDllName or ""),
+                    "dll_load_count": int(module.LoadCount),
                 })
 
             results.append(new)
@@ -449,10 +448,19 @@ class VolatilityManager(object):
         self.mask_pid = []
         self.taint_pid = set()
         self.memfile = memfile
-        self.voptions = Config(os.path.join(CUCKOO_ROOT, "conf", "volatility.conf"))
+
+        conf_path = os.path.join(CUCKOO_ROOT, "conf", "volatility.conf")
+        if not os.path.exists(conf_path):
+            log.error("Configuration file volatility.conf not found".format(conf_path))
+            self.voptions = False
+            return
+
+        self.voptions = Config(conf_path)
 
         for pid in self.voptions.mask.pid_generic.split(","):
-            self.mask_pid.append(int(pid.strip()))
+            pid = pid.strip()
+            if pid:
+                self.mask_pid.append(int(pid))
 
         self.no_filter = not self.voptions.mask.enabled
         self.osprofile = osprofile or self.get_osprofile()
@@ -463,6 +471,11 @@ class VolatilityManager(object):
 
     def run(self):
         results = {}
+
+        # Exit if options were not loaded.
+        if not self.voptions:
+            return
+
         vol = VolatilityAPI(self.memfile, self.osprofile)
 
         # TODO: improve the load of volatility functions.
@@ -525,14 +538,14 @@ class VolatilityManager(object):
             except OSError as e:
                 log.error("Unable to delete memory dump file at path \"%s\" ", self.memfile)
 
-class VolatilityAnalysis(Processing):
+class Memory(Processing):
     """Volatility Analyzer."""
 
     def run(self):
         """Run analysis.
         @return: volatility results dict.
         """
-        self.key = "volatility"
+        self.key = "memory"
 
         results = {}
         if HAVE_VOLATILITY:
@@ -541,7 +554,7 @@ class VolatilityAnalysis(Processing):
                     vol = VolatilityManager(self.memory_path)
                     results = vol.run()
                 except Exception as e:
-                    log.error("Generic error executing volatility {0}".format(e))
+                    log.exception("Generic error executing volatility")
             else:
                 log.error("Memory dump not found: to run volatility you have to enable memory_dump")
         else:

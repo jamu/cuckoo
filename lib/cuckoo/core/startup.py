@@ -8,7 +8,6 @@ import copy
 import json
 import urllib
 import urllib2
-import pkgutil
 import logging
 import logging.handlers
 
@@ -20,7 +19,6 @@ import modules.reporting
 from lib.cuckoo.common.constants import CUCKOO_ROOT, CUCKOO_VERSION
 from lib.cuckoo.common.exceptions import CuckooStartupError
 from lib.cuckoo.common.exceptions import CuckooOperationalError
-from lib.cuckoo.common.exceptions import CuckooDependencyError
 from lib.cuckoo.common.utils import create_folders
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.common.colors import *
@@ -41,7 +39,7 @@ def check_working_directory():
     @raise CuckooStartupError: if directories are not properly configured.
     """
     if not os.path.exists(CUCKOO_ROOT):
-        raise CuckooStartupError("You specified a non-existing root directory: {0}".foramt(CUCKOO_ROOT))
+        raise CuckooStartupError("You specified a non-existing root directory: {0}".format(CUCKOO_ROOT))
 
     cwd = os.path.join(os.getcwd(), "cuckoo.py")
     if not os.path.exists(cwd):
@@ -52,7 +50,8 @@ def check_configs():
     @raise CuckooStartupError: if config files do not exist.
     """
     configs = [os.path.join(CUCKOO_ROOT, "conf", "cuckoo.conf"),
-               os.path.join(CUCKOO_ROOT, "conf", "reporting.conf")]
+               os.path.join(CUCKOO_ROOT, "conf", "reporting.conf"),
+               os.path.join(CUCKOO_ROOT, "conf", "auxiliary.conf")]
 
     for config in configs:
         if not os.path.exists(config):
@@ -106,12 +105,16 @@ def check_version():
             print(green(" Good! ") + "You have the latest version available.\n")
 
 class DatabaseHandler(logging.Handler):
+    """Logging to database handler."""
+
     def emit(self, record):
         if hasattr(record, "task_id"):
             db = Database()
             db.add_error(record.msg, int(record.task_id))
 
 class ConsoleHandler(logging.StreamHandler):
+    """Logging to console handler."""
+
     def emit(self, record):
         colored = copy.copy(record)
 

@@ -3,7 +3,6 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import sys
 import time
 import shutil
 import logging
@@ -12,14 +11,13 @@ from threading import Thread, Lock
 
 from lib.cuckoo.common.constants import CUCKOO_ROOT
 from lib.cuckoo.common.exceptions import CuckooMachineError, CuckooGuestError, CuckooOperationalError, CuckooCriticalError
-from lib.cuckoo.common.abstracts import  Machinery
-from lib.cuckoo.common.objects import Dictionary, File
-from lib.cuckoo.common.utils import  create_folders, create_folder
+from lib.cuckoo.common.objects import File
+from lib.cuckoo.common.utils import create_folder
 from lib.cuckoo.common.config import Config
 from lib.cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
 from lib.cuckoo.core.guest import GuestManager
 from lib.cuckoo.core.resultserver import Resultserver
-from lib.cuckoo.core.plugins import import_plugin, list_plugins, RunAuxiliary, RunProcessing, RunSignatures, RunReporting
+from lib.cuckoo.core.plugins import list_plugins, RunAuxiliary, RunProcessing, RunSignatures, RunReporting
 
 log = logging.getLogger(__name__)
 
@@ -112,11 +110,14 @@ class AnalysisManager(Thread):
         # Start a loop to acquire the a machine to run the analysis on.
         while True:
             machine_lock.acquire()
-            # If the user specified a specific machine ID or a platform to be
-            # used, acquire the machine accordingly.
-            machine = machinery.acquire(machine_id=self.task.machine,
-                                        platform=self.task.platform)
-            machine_lock.release()
+            # If the user specified a specific machine ID, a platform to be
+            # used or machine tags acquire the machine accordingly.
+            try:
+                machine = machinery.acquire(machine_id=self.task.machine,
+                                            platform=self.task.platform,
+                                            tags=self.task.tags)
+            finally:
+                machine_lock.release()
 
             # If no machine is available at this moment, wait for one second
             # and try again.
@@ -185,12 +186,16 @@ class AnalysisManager(Thread):
                 return False
 
         # Acquire analysis machine.
-        self.acquire_machine()
+        try:
+            self.acquire_machine()
+        except CuckooOperationalError as e:
+            log.error("Cannot acquire machine: {0}".format(e))
+            return False
 
         # Generate the analysis configuration file.
         options = self.build_options()
 
-        # At this point we can tell the Resultserver about it
+        # At this point we can tell the Resultserver about it.
         try:
             Resultserver().add_task(self.task, self.machine)
         except Exception as e:
@@ -209,7 +214,7 @@ class AnalysisManager(Thread):
             # Start the machine.
             machinery.start(self.machine.label)
         except CuckooMachineError as e:
-            log.error(str(e), extra={"task_id" : self.task.id})
+            log.error(str(e), extra={"task_id": self.task.id})
 
             # Stop Auxiliary modules.
             aux.stop()
@@ -222,7 +227,7 @@ class AnalysisManager(Thread):
                 # Start the analysis.
                 guest.start_analysis(options)
             except CuckooGuestError as e:
-                log.error(str(e), extra={"task_id" : self.task.id})
+                log.error(str(e), extra={"task_id": self.task.id})
 
                 # Stop Auxiliary modules.
                 aux.stop()
@@ -234,7 +239,7 @@ class AnalysisManager(Thread):
                     guest.wait_for_completion()
                     succeeded = True
                 except CuckooGuestError as e:
-                    log.error(str(e), extra={"task_id" : self.task.id})
+                    log.error(str(e), extra={"task_id": self.task.id})
                     succeeded = False
 
         finally:
@@ -245,7 +250,7 @@ class AnalysisManager(Thread):
             if self.cfg.cuckoo.memory_dump or self.task.memory:
                 try:
                     machinery.dump_memory(self.machine.label,
-                                         os.path.join(self.storage, "memory.dmp"))
+                                          os.path.join(self.storage, "memory.dmp"))
                 except NotImplementedError:
                     log.error("The memory dump functionality is not available "
                               "for current machine manager")
@@ -278,6 +283,10 @@ class AnalysisManager(Thread):
         results = RunProcessing(task_id=self.task.id).run()
         RunSignatures(results=results).run()
         RunReporting(task_id=self.task.id, results=results).run()
+
+        for proc in results["behavior"]["processes"]:
+            log.debug("ParseProcessLog instance for %d (%s) parsed its log %d times.",
+                proc["process_id"], proc["process_name"], proc["calls"].parsecount)
 
         # If the target is a file and the user enabled the option,
         # delete the original copy.
