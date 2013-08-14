@@ -1,19 +1,25 @@
 =============
 Use Cuckoo with PwnyPot
 =============
+PwnyPot is a high interaction client honeypot for Windows operating systems. Despite other High-Interaction honeyClients which detect malicious servers based on system changes (file system and registry modifications, invoked/killed processes, ...), PwnyPot uses a new approach. To accomplish this, PwnyPot uses exploit detection methods to detect drive-by downloads at exploitation stage and dump malware file. Using this approach, PwnyPot eliminates some limitations of current HoneyClients and improves the detection speed of High-Interaction client Honeypots. Some of the methods used in PwnyPot have been first implemented in MS EMET. 
 
 Features
 ========
+* Shellcode Detection
+* Shellcode Dumps
+* ROP Detection
+* ROP Gadget Dumps
 
 
 Installation
 ============
-To use Cuckoo with support for MCEDP you need to pull the mcedp_integration branch from the git-repository `github.com/jamu/cuckoo`_.
+To use Cuckoo with support for PwnyPot you need to pull the mcedp_integration branch from the git-repository `github.com/jamu/cuckoo`_.
 It provides you with the latest development branch of cuckoo combined with all files to configure Pwnypot through the cuckoo submission API. It already contains MCEDP.dll inside the folder 'dll' of the windows analyzer module.
 
 Configuration
 =============
-Inside /conf/ lies the pwnypot.conf configuration file. The file already contains all existing configuration parameters. 
+Inside /conf/ lies the pwnypot.conf configuration file. The file already contains all existing configuration parameters. Inside Cuckoo, the configuration file is parsed in lib/cuckoo/core/scheduler.py, if a task is specified to run with PwnyPot dll injection. It saves the values together with other regular cuckoo options into a dict which is handed over to the start_analysis function inside lib/cuckoo/core/guest.py. The configuration is then sent to the guest where it generates the analysis.conf and the $PID.ini. 
+By saving the PwnyPot variables inside the $PID.ini inside the Windows Temp folder of the user we are logged in to, each new spawned process can easily find its configuration. The analysis.conf file is always saved in a random location. In order to find it we would need to parse the ini-file anyway. 
 
 Global Section
 --------------
