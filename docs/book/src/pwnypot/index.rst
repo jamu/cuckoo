@@ -2,6 +2,10 @@
 Use Cuckoo with PwnyPot
 =============
 
+Features
+========
+
+
 Installation
 ============
 To use Cuckoo with support for MCEDP you need to pull the mcedp_integration branch from the git-repository `github.com/jamu/cuckoo`_.
@@ -11,16 +15,182 @@ Configuration
 =============
 Inside /conf/ lies the pwnypot.conf configuration file. The file already contains all existing configuration parameters. 
 
+Global Section
+--------------
 
+**skip_hbp_error**
+    
+    **Allowed Values: 0, 1**
+    
+    Allows to enable / disable skipping of Hardware Breakpoint Errors.
+
+**init_delay**
+
+    **Allowed Values: Integers**
+
+    Sets the number of seconds, which the Shellcode Detector Thread should sleep before hooking the system calls. 
+
+General Section
+---------------
+
+**permanent_dep**
+
+    **Allowed Values: 0, 1**
+
+    If set to 1 permanent DEP is enabled on the processes, in which PwnyPot gets injected to.
+
+**sehop** (not yet implemented)
+   
+    **Allowed Values: 0, 1**
+
+    Enables structured exception handler overwrite protection if set to 1.
+
+**null_page**
+
+    **Allowed Values: 0, 1**
+
+    Protects against Null Page dereferencing if set to 1. This is done by EnableNullPageProtection in GeneralProtections.cpp by allocating null page and the first 0x1000 bytes proceeding.
+
+
+**heap_spray**
+
+    **Allowed Values: 0, 1**
+    
+    If set to 1, this configuration parameter enables heap spray protection by allocation common heap spray addresses.
+
+**allow_malware_exec**
+
+    **Allowed Values: 0, 1**
+
+    If PwnyPot detects malicious behaviour, it normally kills the process. By setting this parameter to 1, PwnyPot keeps the process running on malware detection.
+
+
+Shellcode Section
+-----------------
+
+**analysis_shellcode**
+
+    **Allowed Values: 0, 1**
+
+    If set to 1, PwnyPot gives further output of process activity on shellcode detection. This currently includes the following function hooks:
+        * CreateThread
+        * URLDownloadToFileW
+        * socket
+        * connect
+        * listen
+        * bind
+        * accept
+        * listen
+        * recv
+
+**syscall_validation** (not yet implemented)
+
+    **Allowed Values: 0, 1**
+
+**eta_validation** 
+
+    **Allowed Values: 0, 1**
+
+
+**etaf_module** 
+
+    **Allowed Values: 0, 1**
+
+**kill_shellcode** 
+
+    **Allowed Values: 0, 1**
+
+**dump_shellcode** 
+
+    **Allowed Values: 0, 1**
+
+**allow_malware_download** 
+
+    **Allowed Values: 0, 1**
+
+ROP Section
+-----------
+
+**detect_rop** 
+
+    **Allowed Values: 0, 1**
+
+
+**dump_rop** 
+
+    **Allowed Values: 0, 1**
+
+**kill_rop** 
+
+    **Allowed Values: 0, 1**
+
+**rop_mem_far** 
+
+    **Allowed Values: Integer**
+
+**forward_execution** 
+
+    **Allowed Values: 0, 1**
+
+**fe_far** 
+
+    **Allowed Values: Integer**
+
+**call_validation** 
+
+    **Allowed Values: 0, 1**
+
+**stack_monitor** 
+
+    **Allowed Values: 0, 1**
+
+
+**max_rop_inst** 
+
+    **Allowed Values: Integer**
+
+**max_rop_mem** 
+
+    **Allowed Values: Integer**
+
+**pivot_detection**
+
+    **Allowed Values: 0, 1**
+
+**pivot_threshold**
+
+    **Allowed Values: Integer**
+
+**pivot_inst_threshold**
+
+    **Allowed Values: Integer**
+
+
+Memory Section
+--------------
+
+**text_rwx**
+
+    **Allowed Values: 0, 1**
+
+**stack_rwx**
+
+    **Allowed Values: 0, 1**
+
+**text_randomization**
+
+    **Allowed Values: 0, 1**
+    
+    
 Usage
 =====
 You can start the analysis through the cuckoo submit.py script in /utils/. Add the following option to use PwnyPot as analysis dll instead of Cuckoo::
     
-    ./utils/submit.py --package pdf --options dll=MCEDP.dll mal_file.pdf 
+    $ ./utils/submit.py --package pdf --options dll=MCEDP.dll mal_file.pdf 
 
 If you do not specify the dll parameter, cuckoo.dll will be injected as default.
 After the successful analysis you can find all processed results inside the file storage/analyses/id/reports/results.html. You can also start the web interface with ::
-    ./utils/web.py
+    $ ./utils/web.py
 and open your browser with localhost:8080 to view all analyses.
 
 
