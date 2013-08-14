@@ -260,7 +260,6 @@ class Process:
         @param dll: Cuckoo DLL path.
         @param apc: APC use.
         """
-        log.debug("injection dll: %s" %dll)
         if self.pid == 0:
             log.warning("No valid pid specified, injection aborted")
             return False
