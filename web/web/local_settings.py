@@ -6,7 +6,7 @@ LOCAL_SETTINGS = True
 from settings import *
 
 # If you want to customize your cuckoo path set it here.
-# CUCKOO_PATH = "/where/cuckoo/is/placed/"
+CUCKOO_PATH = "/home/jamu/gsoc/cuckoo/"
 
 # If you want to customize your cuckoo temporary upload path set it here.
 # CUCKOO_FILE_UPLOAD_TEMP_DIR = "/where/web/tmp/is/placed/"

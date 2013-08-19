@@ -42,7 +42,7 @@ class Pwnypot(Processing):
             for file_name in file_names:
                 file_path = os.path.join(dir_name, file_name)
                 # read generel Logfiles
-                if "LogInfo.txt" in file_name or "Rop" in file_name:                        
+                if "LogInfo" in file_name or "Rop" in file_name:                        
                     fd = open(file_path,"r")
                     file_content = fd.read()
                     fd.close()
@@ -53,7 +53,7 @@ class Pwnypot(Processing):
                 # malicious activation exist
                 if "ShellcodeAnalysis.xml" in file_name:   
                     binaries[file_name] = {}
-                    bin_path = os.path.join(dir_name, file_name.replace("Analysis.xml", ".bin"))
+                    bin_path = os.path.join(dir_name, file_name.replace("Analysis", ".bin"))
                     if os.path.exists(bin_path):    
                         fd = open(bin_path,"r")
                         file_content = fd.read()
@@ -61,7 +61,7 @@ class Pwnypot(Processing):
                         if len(file_content)>0:
                             # read disassmbly of shellcode
                             binaries[file_name]["shellcode"] = File(file_path=bin_path).get_all()
-                            disass_path = os.path.join(dir_name,file_name.replace("Analysis.xml","Disass.txt"))                        
+                            disass_path = os.path.join(dir_name,file_name.replace("Analysis","Disass"))                        
                             if os.path.exists(disass_path):
                                 fd = open(disass_path,"r")
                                 binaries[file_name]["disass"] = fd.read()
@@ -141,7 +141,7 @@ class Pwnypot(Processing):
                             if row.attrib.get('type') == SEND:
                                 binaries[file_name]["connections"][row.attrib.get("socket")]["send"] = {"ip":row.attrib.get("send_ip"), "port": row.attrib.get("send_port")}
                                 # check for existing network dump
-                                dump_path = os.path.join(dir_name, file_name.replace("Shellcode.bin", "dump-%s.txt" %(row.attrib.get("data_uid"))))
+                                dump_path = os.path.join(dir_name, file_name.replace("ShellcodeBin", "dump-%s" %(row.attrib.get("data_uid"))))
                                 if os.path.exists(dump_path):
                                     fd = open(dump_path,"r")
                                     try:
@@ -154,7 +154,7 @@ class Pwnypot(Processing):
                             if row.attrib.get('type') == RECV:
                                 binaries[file_name]["connections"][row.attrib.get("socket")]["recv"] = {"ip":row.attrib.get("recv_ip"), "port": row.attrib.get("recv_port")}
                                 # check for existing network dump
-                                dump_path = os.path.join(dir_name, file_name.replace("Shellcode.bin", "dump-%s.txt" %(row.attrib.get("data_uid"))))
+                                dump_path = os.path.join(dir_name, file_name.replace("ShellcodeBin", "dump-%s" %(row.attrib.get("data_uid"))))
                                 if os.path.exists(dump_path):
                                     fd = open(dump_path,"r")
                                     try:
@@ -165,7 +165,7 @@ class Pwnypot(Processing):
                                 
 
 
-                        log_path = os.path.join(dir_name,file_name.replace("ShellcodeAnalysis.xml","LogShellcode.txt"))
+                        log_path = os.path.join(dir_name,file_name.replace("ShellcodeAnalysis","LogShellcode"))
                         if os.path.exists(log_path):
                             fd = open(log_path, "r")
                             binaries[file_name]["log"] = fd.read()

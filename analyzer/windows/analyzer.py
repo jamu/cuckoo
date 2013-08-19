@@ -214,8 +214,8 @@ class PipeHandler(Thread):
                     else:
                         thread_id = None
                         if isinstance(param, str):                        
-                            if "MCEDP.dll" in param:
-                                dll = os.path.join("dll", "MCEDP.dll")                        
+                            if "PwnyPot.dll" in param:
+                                dll = os.path.join("dll", "PwnyPot.dll")                        
 
 
                 if process_id:

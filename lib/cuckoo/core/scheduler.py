@@ -157,7 +157,7 @@ class AnalysisManager(Thread):
 
         # load PwnyPot configuration if we are using MCEDP.dll
         # therefore load each value of each section into options dict
-        if "MCEDP.dll" in self.task.options:
+        if "PwnyPot.dll" in self.task.options:
             cfg = Config(os.path.join(CUCKOO_ROOT, "conf", "pwnypot.conf"))
             sections = ["global", "general", "shellcode", "rop", "memory"]
             for s in sections:
