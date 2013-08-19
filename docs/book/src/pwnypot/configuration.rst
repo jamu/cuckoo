@@ -5,7 +5,7 @@ Inside /conf/ lies the pwnypot.conf configuration file. The file already contain
 By saving the PwnyPot variables inside the $PID.ini inside the Windows Temp folder of the user we are logged in to, each new spawned process can easily find its configuration. The analysis.conf file is always saved in a random location. In order to find it we would need to parse the ini-file anyway. 
 
 Global Section
---------------
+==============
 
 **skip_hbp_error**
     
@@ -20,7 +20,7 @@ Global Section
     Sets the number of seconds, which the Shellcode Detector Thread should sleep before hooking the system calls. 
 
 General Section
----------------
+===============
 
 **permanent_dep**
 
@@ -55,7 +55,7 @@ General Section
 
 
 Shellcode Section
------------------
+=================
 
 **analysis_shellcode**
 
@@ -82,13 +82,15 @@ Shellcode Section
 
     **Allowed Values: 0, 1**
 
-    Enables / Disables Export Table Access Validation.
+    Enables / Disables Export Table Access Validation. When this option is enabled, the shellcode detector thread adds itself, or more explicitly the function DbgExceptionHandler in ETAV_DebugBreak.cpp,  as a Debug Exception Handler. This handler then checks whether it is called because of an access to the export table. If this is the case, it verifies whether the access is from a valid loaded module or not. If not, a global shellcode flag is set in order to proceed the analysis depending on the configuration.
 
-**etaf_module** 
+    If you enable this option, do not forget to set a valid module with the parameter eta_module.
+
+**eta_module** 
 
     **Allowed Values: String**
 
-    Specifies the Module for ETA Validation.
+    Specifies the Module to watch for ETA Validation (e.g. Kernel32.dll).
 
 **kill_shellcode** 
 
@@ -110,7 +112,7 @@ Shellcode Section
     Enables / Disables downloading of malware. This is done by hooking URLDownloadToFileW. 
 
 ROP Section
------------
+===========
 
 **detect_rop** 
 
@@ -174,7 +176,7 @@ ROP Section
 
 
 Memory Section
---------------
+==============
 
 **text_rwx** (not yet implemented)
 
