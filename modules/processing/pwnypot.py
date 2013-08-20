@@ -24,9 +24,10 @@ BIND = "6"
 ACCEPT = "7"
 SEND = "8"
 RECV = "9"
+SOCKET_RANGE = range(3,10)
 
 class Pwnypot(Processing):
-    """Analysis of all files received by MCEDP.dll."""
+    """Analysis of all files received by PwnyPot.dll."""
 
     def run(self):
         """Run analysis.
@@ -51,9 +52,9 @@ class Pwnypot(Processing):
                         log_files[file_name] = file_content
 
                 # malicious activation exist
-                if "ShellcodeAnalysis.xml" in file_name:   
+                if "ShellcodeAnalysis" in file_name:   
                     binaries[file_name] = {}
-                    bin_path = os.path.join(dir_name, file_name.replace("Analysis", ".bin"))
+                    bin_path = os.path.join(dir_name, file_name.replace("Analysis", "Bin"))
                     if os.path.exists(bin_path):    
                         fd = open(bin_path,"r")
                         file_content = fd.read()
@@ -84,7 +85,8 @@ class Pwnypot(Processing):
                         binaries[file_name]["connections"] = OrderedDict()
                         # parse analysis information types
                         for row in xml.iter("row"):
-                            if row.attrib.get('type') == ROP:
+                            analysis_type = row.attrib.get('type')
+                            if analysis_type == ROP:
                                 rop = {}
                                 rop["module_name"] = row.attrib.get("module")
                                 rop["function"] = row.attrib.get("function")   
@@ -116,32 +118,37 @@ class Pwnypot(Processing):
                                 rop["gadgets"] = rop_gadgets
                                 binaries[file_name]["rop_chains"].append(rop)
 
-                            if row.attrib.get('type') == EXEC:
+                            if analysis_type == EXEC:
                                 binaries[file_name]["execs"].append("Executing Command: %s" % row.attrib.get("exec_cmd"))
 
-                            if row.attrib.get('type') == URL_DOWNLOAD_TO_FILE:
+                            if analysis_type == URL_DOWNLOAD_TO_FILE:
                                 binaries[file_name]["downloads"].append("Download url: %s filename: %s" % (row.attrib.get("download_url"), row.attrib.get("download_filename")))
 
-                            if row.attrib.get('type') == SOCKET:
-                                binaries[file_name]["connections"][row.attrib.get("socket")] = OrderedDict()
+                            if int(analysis_type) in SOCKET_RANGE:
+                                try:                                 
+                                    tmp = binaries[file_name]["connections"][row.attrib.get("socket")] 
+                                except:
+                                    binaries[file_name]["connections"][row.attrib.get("socket")] = OrderedDict()
+
+                            if analysis_type == SOCKET:
                                 binaries[file_name]["connections"][row.attrib.get("socket")]["socket"] = {"AF":row.attrib.get("AF"),"type":row.attrib.get("socket_type")}
 
-                            if row.attrib.get('type') == CONNECT:
+                            if analysis_type == CONNECT:
                                 binaries[file_name]["connections"][row.attrib.get("socket")]["connect"] = {"ip":row.attrib.get("connect_ip"),"port":row.attrib.get("connect_port")}
 
-                            if row.attrib.get('type') == LISTEN:
+                            if analysis_type == LISTEN:
                                 binaries[file_name]["connections"][row.attrib.get("socket")]["listen"] = row[0].text
 
-                            if row.attrib.get('type') == BIND:
+                            if analysis_type == BIND:
                                 binaries[file_name]["connections"][row.attrib.get("socket")]["bind"] = {"ip":row.attrib.get("bind_ip"), "port": row.attrib.get("bind_port")}
 
-                            if row.attrib.get('type') == ACCEPT:
+                            if analysis_type == ACCEPT:
                                 binaries[file_name]["connections"][row.attrib.get("socket")]["accept"] = {"ip":row.attrib.get("accept_ip"), "port": row.attrib.get("accept_port")}
 
-                            if row.attrib.get('type') == SEND:
+                            if analysis_type == SEND:
                                 binaries[file_name]["connections"][row.attrib.get("socket")]["send"] = {"ip":row.attrib.get("send_ip"), "port": row.attrib.get("send_port")}
                                 # check for existing network dump
-                                dump_path = os.path.join(dir_name, file_name.replace("ShellcodeBin", "dump-%s" %(row.attrib.get("data_uid"))))
+                                dump_path = os.path.join(dir_name, file_name.replace("ShellcodeAnalysis", "_dump-%s" %(row.attrib.get("data_uid"))))
                                 if os.path.exists(dump_path):
                                     fd = open(dump_path,"r")
                                     try:
@@ -151,23 +158,23 @@ class Pwnypot(Processing):
                                     fd.close()
                                 
 
-                            if row.attrib.get('type') == RECV:
+                            if analysis_type == RECV:
                                 binaries[file_name]["connections"][row.attrib.get("socket")]["recv"] = {"ip":row.attrib.get("recv_ip"), "port": row.attrib.get("recv_port")}
                                 # check for existing network dump
-                                dump_path = os.path.join(dir_name, file_name.replace("ShellcodeBin", "dump-%s" %(row.attrib.get("data_uid"))))
+                                dump_path = os.path.join(dir_name, file_name.replace("ShellcodeAnalysis", "_dump-%s" %(row.attrib.get("data_uid"))))
                                 if os.path.exists(dump_path):
                                     fd = open(dump_path,"r")
                                     try:
                                         binaries[file_name]["connections"][row.attrib.get("socket")]["recv"]["dump"] = u"%s" %(fd.read().encode('utf-8'))
                                     except Exception as e:
-                                        received["dump"] = u"encoding error"
+                                        binaries[file_name]["connections"][row.attrib.get("socket")]["recv"]["dump"] = u"encoding error"
                                     fd.close()
                                 
 
 
                         log_path = os.path.join(dir_name,file_name.replace("ShellcodeAnalysis","LogShellcode"))
                         if os.path.exists(log_path):
-                            fd = open(log_path, "r")
+                            fd = open(log_path, "rb")
                             binaries[file_name]["log"] = fd.read()
                             fd.close()
                                                

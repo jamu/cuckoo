@@ -3,16 +3,16 @@
 <p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
 <div class="tabbable tabs-left">
     <ul class="nav nav-tabs">
-        <li class="active"><a href="#overview" data-toggle="tab">Quick Overview</a></li>
+        <li><a href="#overview" data-toggle="tab">Quick Overview</a></li>
         <li><a href="#static" data-toggle="tab">Static Analysis</a></li>
         {% if analysis.behavior.processes %}<li><a href="#behavior" data-toggle="tab" id="graph_hook">Behavioral Analysis</a></li>{% endif %}
         <li><a href="#network" data-toggle="tab">Network Analysis</a></li>
         <li><a href="#dropped" data-toggle="tab">Dropped Files</a></li>
-        {% if analysis.memory %}<li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>{% endif %}
-        <li><a href="#pwnypot" data-toggle="tab">PwnyPot Analysis</a></li>
+        {% if analysis.memory %}<li><a href="#memory" data-toggle="tab">Memory Analysis</a></li>{% endif %}        
+        {% if analysis.pwnypot %}<li class="active"><a href="#pwnypot" data-toggle="tab">PwnyPot Analysis</a></li>{% endif %}
     </ul>
     <div class="tab-content">
-        <div class="tab-pane fade in active" id="overview">
+        <div class="tab-pane fade" id="overview">
             {% include "analysis/overview/index.html" %}
         </div>
         <div class="tab-pane fade" id="static">
@@ -34,9 +34,11 @@
             {% include "analysis/memory/index.html" %}
         </div>
         {% endif %}
-        <div class="tab-pane fade" id="pwnypot">
+        {% if analysis.pwnypot %}
+        <div class="tab-pane fade in active" id="pwnypot">
             {% include "analysis/pwnypot/index.html" %}
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
