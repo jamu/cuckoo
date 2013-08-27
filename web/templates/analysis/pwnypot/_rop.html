@@ -2,126 +2,148 @@
     <div class="section-title">
         <h4>pwnypot Analysis</h4>
     </div>
-        {% if analysis.pwnypot %}
-            {% if analysis.pwnypot.binaries %}
-            <div>
-                <div id="pwnypot_shellcodes">
-                    <table class="table table-striped table-bordered">
-                        <tr>
-                            <th>PIDs with detected Malicious Behaviour</th>
-                        </tr>
-                        {% for key,value in analysis.pwnypot.binaries.iteritems %}
-                        <tr>
-                            <td>
-                                <h4><a href="javascript:showHide('bin_{{key}}');">{{value.pid}}</a></h4>
-                                <div id="bin_{{key}}" style="">
-                                    {% if value.rop_chains != None %}
-                                    <h5><a href="javascript:showHide('rop_{{key}}');">ROP Analysis</a></h5>                                    
-                                    <div id="rop_{{key}}" style="">
-                                        {% for chain in value.rop_chains %}
-                                        <table class="table table-striped table-bordered">
-                                            <tr>
-                                                <td><h6>Module:</td><td>{{chain.module_name}}</h6></td>                                              
-                                            </tr> 
-                                            {% for gadget in chain.gadgets %}
-                                            <tr>
-                                                <td>Gadget @ Offset {{gadget.offset}}</td>
-                                                <td><pre>{{gadget.instructions}}
-                                                    </pre>
-                                                </td>
-                                            </tr>
-                                            {% if gadget.stack_values %}
-                                            <tr>
-                                                <td>Addresses outside of the Module</td>
-                                                <td><pre>{% for s in gadget.stack_values %}[ {{s.0}} ]&#9;&#9;&#9;&#9;DB  {{s.1}}&#9;&#9;&#9;&#9;{{s.2}}<br>{% endfor %}
-                                                    </pre>
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                            {% endfor %}
 
-                                        </table>
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                    {% if value.shellcode != None %}
-                                    <h5><a href="javascript:showHide('sc_{{key}}');">Shellcode Analysis</a></h5>
-                                    <div id="sc_{{key}}" style="">
-                                        <table class="table table-striped table-bordered">
-                                            <tr>
-                                                <td><h5>Filetype:</h5> {{value.shellcode.type}}</td>
-                                                <td><h5>Filesize:</h5> {{value.shellcode.size}} bytes </td>
-                                                <td><h5>Sha-1:</h5> {{value.shellcode.sha1}}</td>
-                                                <td><h5>MD5</h5> {{value.shellcode.md5}}</td>
-                                                <td><h5>Log:</h5> <span class="mono"><pre>{{value.log}}</pre></span></td>
-                                            </tr>
-                                        </table>
-                                        <table class="table table-striped table-bordered">
-                                            {% for exec in value.execs %}
-                                            <tr>
-                                                <td><h5>Cmds Executed:</h5></td><td><span class="mono"><pre>{{exec}}</pre></span></td>                                           
-                                            </tr>
-                                            {% endfor %}
-                                            {% for download in value.downloads %}
-                                            <tr>
-                                                <td><h5>Downloads:</h5></td><td><span class="mono"><pre>{{download}}</pre></span></td>                                            
-                                            </tr>
-                                            {% endfor %}
-                                            {% for key1,value1 in value.connections.iteritems %}
-                                            <tr>
-                                                <td><h5>Network action on Socket {{key1}}:</h5></td><td><span class="mono">
-                                                {% for key2,value2 in value1.iteritems %}
-                                                    <h6>{{key2}}</h6>
-                                                    <pre>{% for key3, value3 in value2.iteritems %}{{key3}}:{{value3}}<br>{% endfor %}</pre>
-                                                {% endfor %}
-                                                </span></td>                                            
-                                            </tr>
-                                            {% endfor %}
-                                        </table>
-                                        <h5><a href="javascript:showHide('dis_{{key}}');">Disassembled Shellcode:</a></h5>
-                                        <div id="dis_{{key}}" style="">
-                                            <table class="table table-striped table-bordered">
-                                                <tr>
-                                                    <td><br><span class="mono"><pre>{{value.disass}}</pre></span></td>
-                                                </tr>
-                                            </table>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                </div>                           
-                            </td>                        
-                        </tr>
-                        {% endfor %}
-                    </table>
-                </div>
-            </div>        
-            {% endif %}
-
-
+    {% if analysis.pwnypot %}
+    {% if analysis.pwnypot.binaries %}
+    <div class="tabbable tabs">
+        <ul class="nav nav-pills" style="margin-bottom: 0;">
+            {% for key,value in analysis.pwnypot.binaries.iteritems %}
+            <li><a href="#{{value.pid}}" data-toggle="tab">PID {{value.pid}}</a></li>
+            {% endfor %}
             {% if analysis.pwnypot.log_files %}
-            <div>
-                <div id="pwnypot_logs">
-                    <table class="table table-striped table-bordered">
-                        <tr>
-                            <th>Log-Files</th>
-                        </tr>
-                        {% for key,value in analysis.pwnypot.log_files.iteritems %}
-                        <tr>
-                            <td>
-                                <h4><a href="javascript:showHide('log_{{key}}');">{{key}}</a></h4>
-                                <div id="log_{{key}}" style="">
+            <li class="active"><a href="#logs" data-toggle="tab">Log-files</a></li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="tab-content">
+        {% for key,value in analysis.pwnypot.binaries.iteritems %}
+        <div class="tab-pane fade in" id="{{value.pid}}">
+            <section id="#pid_{{value.pid}}">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                        <td>
+                            <h4><a href="javascript:showHide('bin_{{key}}');">{{value.pid}}</a></h4>
+                            <div id="bin_{{key}}" style="">
+                                {% if value.rop_chains != None %}
+                                <h5><a href="javascript:showHide('rop_{{key}}');">ROP Analysis</a></h5>                                    
+                                <div id="rop_{{key}}" style="">
+                                    {% for chain in value.rop_chains %}
                                     <table class="table table-striped table-bordered">
                                         <tr>
-                                            <td><span class="mono"><pre>{{value}}</pre></span></td>
+                                            <td><h6>Module:</td><td>{{chain.module_name}}</h6></td>                                              
+                                        </tr> 
+                                        {% for gadget in chain.gadgets %}
+                                        <tr>
+                                            <td>Gadget @ Offset {{gadget.offset}}</td>
+                                            <td><pre>{{gadget.instructions}}
+                                                </pre>
+                                            </td>
+                                        </tr>
+                                        {% if gadget.stack_values %}
+                                        <tr>
+                                            <td>Addresses outside of the Module</td>
+                                            <td><pre>{% for s in gadget.stack_values %}[ {{s.0}} ]&#9;&#9;&#9;&#9;DB  {{s.1}}&#9;&#9;&#9;&#9;{{s.2}}<br>{% endfor %}
+                                                </pre>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                {% if value.shellcode != None %}
+                                <h5><a href="javascript:showHide('sc_{{key}}');">Shellcode Analysis</a></h5>
+                                <div id="sc_{{key}}" style="">
+                                    <table class="table table-striped table-bordered">
+                                        <tr>
+                                            <td><h5>Filetype:</h5> {{value.shellcode.type}}</td>
+                                            <td><h5>Filesize:</h5> {{value.shellcode.size}} bytes </td>
+                                            <td><h5>Sha-1:</h5> {{value.shellcode.sha1}}</td>
+                                            <td><h5>MD5</h5> {{value.shellcode.md5}}</td>
+                                            <td><h5>Log:</h5> <span class="mono"><pre>{{value.log}}</pre></span></td>
                                         </tr>
                                     </table>
-                                </div>                            
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </table>
-                </div>
-            </div>        
-            {% endif %}    
-        {% endif%}
+                                    <table class="table table-striped table-bordered">
+                                        {% for exec in value.execs %}
+                                        <tr>
+                                            <td><h5>Cmds Executed:</h5></td><td><span class="mono"><pre>{{exec}}</pre></span></td>                                           
+                                        </tr>
+                                        {% endfor %}
+                                        {% for download in value.downloads %}
+                                        <tr>
+                                            <td><h5>Downloads:</h5></td><td><span class="mono"><pre>{{download}}</pre></span></td>                                            
+                                        </tr>
+                                        {% endfor %}
+                                        {% for key1,value1 in value.connections.iteritems %}
+                                        <tr>
+                                            <td>
+                                                <h5>Network action on Socket {{key1}}:</h5>
+                                            </td>
+                                            <td>
+                                                <span class="mono">
+                                                {% for key2,value2 in value1.iteritems %}
+                                                <h6>{{key2}}</h6>
+                                                <pre>{% for key3, value3 in value2.iteritems %}{{key3}}:{{value3}}<br>{% endfor %}</pre>
+                                                {% endfor %}
+                                                </span>
+                                            </td>                                            
+                                        </tr>
+                                        {% endfor %}
+                                    </table>
+                                    <h5><a href="javascript:showHide('dis_{{key}}');">Disassembled Shellcode:</a></h5>
+                                    <div id="dis_{{key}}" style="">
+                                        <table class="table table-striped table-bordered">
+                                            <tr>
+                                                <td><br><span class="mono"><pre>{{value.disass}}</pre></span></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>                           
+                        </td>                        
+                    </tr>
+                </table>
+            </section>
+        </div>
+        {% endfor %}    
+
+    {% if not analysis.pwnypot.log_files %}
+    </div>
+    {% endif %}
+    {% endif %}
+
+
+    {% if analysis.pwnypot.log_files %}
+    {% if not analysis.pwnypot.binaries %}
+    <div class="tab-content">
+    {%endif %}
+        <div class="tab-pane fade in active" id="logs">
+            <section id="#section_logs">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                        <th>Log-Files</th>
+                    </tr>
+                    {% for key,value in analysis.pwnypot.log_files.iteritems %}
+                    <tr>
+                        <td>
+                            <h4><a href="javascript:showHide('log_{{key}}');">{{key}}</a></h4>
+                            <div id="log_{{key}}" style="">
+                                <table class="table table-striped table-bordered">
+                                    <tr>
+                                        <td><span class="mono"><pre>{{value}}</pre></span></td>
+                                    </tr>
+                                </table>
+                            </div>                            
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </section>
+        </div>
+    {% endif %}            
+   </div>
+   {% endif%}
 </section>
