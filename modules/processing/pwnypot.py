@@ -24,6 +24,9 @@ BIND = "6"
 ACCEPT = "7"
 SEND = "8"
 RECV = "9"
+API = "10"
+HOTPATCH = "11"
+SEH = "12"
 SOCKET_RANGE = range(3,10)
 
 class Pwnypot(Processing):
