@@ -24,8 +24,18 @@ General Protections
 
 
     * Heap Spray Mitigation
-    
+
       Pwnypot tries to mitigate Heap Sprays by allocating common Heap Spray addresses.
+
+    
+    * Structured Exception Handler Overwrite Protection (SEHOP)
+
+      In order to get the execution flow of the program to injected code, an attacker can use the SEH overwrite technique. For more details of this attack see (http://blogs.technet.com/b/srd/archive/2009/02/02/preventing-the-exploitation-of-seh-overwrites-with-sehop.aspx).
+      With Windows Vista SP1 and above SEHOP is already provided and can be enabled per Process. With the configuration variable sehop set to 1, SEHOP is enabled for the analyzed process. 
+      Pwnypot checks whether native SEHOP is possible, otherwise uses its own implementation. With force_pwnypot_sehop set to 1, the pwnypot implementation is used even if native SEHOP is supported. This is useful to analyze the attack on the Exception Chain. 
+
+      The SEHOP implementation of PwnyPot is done by validating the Exception Chain before any Exception Handler is called. Therefore, the prologue of KiUserExceptionDispatcher is overwritten with a jump to the validation function. The exception chain is then validated, by walking through it and also by validating the corresponding exception handlers. If no malicious codes can be found, the overwritten prologue and a jump to the position afterwards is executed.
+      More details can be found here (http://www.uninformed.org/?v=5&a=2&t=txt).
 
 
 .. _shellcode_detection:
@@ -124,11 +134,7 @@ Detection of ASLR/DEP Bypasses
     * BOOL WINAPI SetProcessDEPPolicy (DWORD dwFlags)
         This is the most trivial, but also probably least working method for an attacker to disable DEP. It fails, if permanent DEP is enabled and the function does not even exist anymore in Windows Versions after Windows XP. The value of dwFlags must be 0 in order to disable DEP.
 
-    * NTSTATUS WINAPI NtSetInformationProcess (
-      HANDLE hProcess, 
-      ULONG ProcessInformationClass, 
-      __in_bcount(ProcessInformationLength)PVOID ProcessInformation, 
-      ULONG ProcessInformationLength)
+    * NTSTATUS WINAPI NtSetInformationProcess (HANDLE hProcess, ULONG ProcessInformationClass, __in_bcount(ProcessInformationLength)PVOID ProcessInformation, ULONG ProcessInformationLength)
         This WINNT function can be used to change the DEP Policy of a Process. Therefore the ProcessInformationClass must be set to 0x22 which stands for setting the ProcessExecuteFlags. ProcessInformation then contains the Information which Execute Flags should be set. PwnyPots detects, if this value contains the flag to enable memory execution. This is eequivalent to disabling DEP. 
 
 
