@@ -57,6 +57,7 @@ class Pwnypot(Processing):
                 # malicious activation exist
                 if "ShellcodeAnalysis" in file_name:   
                     binaries[file_name] = {}
+                    binaries[file_name]["pid"] = file_name.split("_")[0]
                     bin_path = os.path.join(dir_name, file_name.replace("Analysis", "Bin"))
                     # check for shellcode and disassembly
                     if os.path.exists(bin_path):    
@@ -75,7 +76,6 @@ class Pwnypot(Processing):
                     if (binaries[file_name].get("shellcode") == None):
                         binaries[file_name]["shellcode"] = None
 
-                    binaries[file_name]["pid"] = file_name.split("_")[0]
                     xml_path = os.path.join(dir_name, file_name)
 
                     # parse Analysis XML file

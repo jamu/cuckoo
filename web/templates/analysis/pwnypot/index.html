@@ -3,14 +3,14 @@
     {% if analysis.pwnypot.binaries %}
     <div class="tabbable tabs">
         <ul class="nav nav-pills" style="margin-bottom: 0;">
-            {% for key,value in analysis.pwnypot.binaries.iteritems %}
-            {% if value.shellcode or value.rop_chains %}
-            <li><a href="#{{value.pid}}" data-toggle="tab">PID {{value.pid}}</a></li>
-            {% endif %}
-            {% endfor %}
             {% if analysis.pwnypot.log_files %}
             <li class="active"><a href="#logs" data-toggle="tab">Log-files</a></li>
             {% endif %}
+            {% for key,value in analysis.pwnypot.binaries.iteritems %}
+            {% if value.shellcode or value.rop_chains or value.apis %}
+            <li><a href="#{{value.pid}}" data-toggle="tab">PID {{value.pid}}</a></li>
+            {% endif %}
+            {% endfor %}
         </ul>
     </div>
 
