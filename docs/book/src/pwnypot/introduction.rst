@@ -9,4 +9,4 @@ PwnyPot can be used to analyze behaviour in nearly any Windows application. By n
 
 How it works
 ============
-When a task with the MCEDP.dll option is sent to the guest via Cuckoo, the Cuckoo agent injects PwnyPot.dll into the desired process. If PwnyPot detects malware, and the option allow_malware_exec is true, the malware is executed in a new process and cuckoomon.dll is injected in order to analyze the behaviour of the malware.
+When a task with the PwnyPot.dll option is sent to the guest via Cuckoo, the Cuckoo agent injects PwnyPot.dll into the desired process. If PwnyPot detects malware, and the option allow_malware_exec is true, the malware is executed in a new process and cuckoomon.dll is injected in order to analyze the behaviour of the malware.
