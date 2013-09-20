@@ -23,13 +23,13 @@ RESOLUTION = {
 
 def foreach_child(hwnd, lparam):
     buttons = [
-        "&yes",
-        "&ok",
-        "&accept",
-        "&next",
-        "&install",
-        "&run",
-        "&agree"
+        "yes",
+        "ok",
+        "accept",
+        "next",
+        "install",
+        "run",
+        "agree"
     ]
 
     classname = create_unicode_buffer(50)
@@ -44,7 +44,7 @@ def foreach_child(hwnd, lparam):
 
         # Check if the button is "positive".
         for button in buttons:
-            if text.value.lower().startswith(button):
+            if button in text.value.lower():
                 log.info("Found button \"%s\", clicking it" % text.value)
                 USER32.SetForegroundWindow(hwnd)
                 KERNEL32.Sleep(1000)
@@ -61,7 +61,13 @@ def move_mouse():
     x = random.randint(0, RESOLUTION["x"])
     y = random.randint(0, RESOLUTION["y"])
 
-    USER32.mouse_event(0x8000, x, y, 0, None)
+    # Originally was:
+    #USER32.mouse_event(0x8000, x, y, 0, None)
+    # Changed to SetCurorPos, since using GetCursorPos would not detect
+    # the mouse events. This actually moves the cursor around which might
+    # cause some unintended activity on the desktop. We might want to make
+    # this featur optional.
+    USER32.SetCursorPos(x, y)
 
 def click_mouse():
     # mouse down
