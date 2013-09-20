@@ -3,13 +3,11 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
-import logging 
 
 from lib.common.abstracts import Package
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
 
-log = logging.getLogger(__name__)
 
 class IE(Package):
     """Internet Explorer analysis package."""
