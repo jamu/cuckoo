@@ -311,6 +311,7 @@ class Process:
             config.write("host-port={0}\n".format(cfg.port))
             config.write("pipe={0}\n".format(PIPE))
             config.write("results={0}\n".format(PATHS["root"]))
+            config.write("dll-path={0}\n".format(dll))
             config.write("analyzer={0}\n".format(os.getcwd()))
             config.write("first-process={0}\n".format(Process.first_process))
             Process.first_process = False

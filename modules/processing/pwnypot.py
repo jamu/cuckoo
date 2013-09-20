@@ -57,7 +57,9 @@ class Pwnypot(Processing):
                 # malicious activation exist
                 if "ShellcodeAnalysis" in file_name:   
                     binaries[file_name] = {}
+                    binaries[file_name]["pid"] = file_name.split("_")[0]
                     bin_path = os.path.join(dir_name, file_name.replace("Analysis", "Bin"))
+                    # check for shellcode and disassembly
                     if os.path.exists(bin_path):    
                         fd = open(bin_path,"r")
                         file_content = fd.read()
@@ -74,7 +76,6 @@ class Pwnypot(Processing):
                     if (binaries[file_name].get("shellcode") == None):
                         binaries[file_name]["shellcode"] = None
 
-                    binaries[file_name]["pid"] = file_name.split("_")[0]
                     xml_path = os.path.join(dir_name, file_name)
 
                     # parse Analysis XML file
@@ -86,6 +87,7 @@ class Pwnypot(Processing):
                         binaries[file_name]["downloads"] = []
                         binaries[file_name]["sockets"] = []
                         binaries[file_name]["connections"] = OrderedDict()
+                        binaries[file_name]["apis"] = []
                         # parse analysis information types
                         for row in xml.iter("row"):
                             analysis_type = row.attrib.get('type')
@@ -173,7 +175,8 @@ class Pwnypot(Processing):
                                         binaries[file_name]["connections"][row.attrib.get("socket")]["recv"]["dump"] = u"encoding error"
                                     fd.close()
                                 
-
+                            if analysis_type == API:
+                                binaries[file_name]["apis"].append("API: %s - Parameter: %s" %(row.attrib.get("api"),row.attrib.get("value")))
 
                         log_path = os.path.join(dir_name,file_name.replace("ShellcodeAnalysis","LogShellcode"))
                         if os.path.exists(log_path):
@@ -182,7 +185,8 @@ class Pwnypot(Processing):
                             fd.close()
                                                
 
-
-        results["log_files"] = log_files
-        results["binaries"] = binaries
+        if log_files:
+            results["log_files"] = log_files
+        if binaries:
+            results["binaries"] = binaries
         return results    

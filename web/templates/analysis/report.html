@@ -3,7 +3,7 @@
 <p style="margin-bottom: 10px;"><img src="{{ STATIC_URL }}graphic/cuckoo.png" /></p>
 <div class="tabbable tabs-left">
     <ul class="nav nav-tabs">
-        <li><a href="#overview" data-toggle="tab">Quick Overview</a></li>
+        <li {% if not analysis.pwnypot %}class="active"{% endif %}><a href="#overview" data-toggle="tab">Quick Overview</a></li>
         <li><a href="#static" data-toggle="tab">Static Analysis</a></li>
         {% if analysis.behavior.processes %}<li><a href="#behavior" data-toggle="tab" id="graph_hook">Behavioral Analysis</a></li>{% endif %}
         <li><a href="#network" data-toggle="tab">Network Analysis</a></li>
@@ -12,7 +12,7 @@
         {% if analysis.pwnypot %}<li class="active"><a href="#pwnypot" data-toggle="tab">PwnyPot Analysis</a></li>{% endif %}
     </ul>
     <div class="tab-content">
-        <div class="tab-pane fade" id="overview">
+        <div class="tab-pane fade{% if not analysis.pwnypot %}in active{% endif %}" id="overview">
             {% include "analysis/overview/index.html" %}
         </div>
         <div class="tab-pane fade" id="static">

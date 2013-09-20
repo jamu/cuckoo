@@ -1,7 +1,7 @@
 Build PwnyPot
 =============
-If you want to build PwnyPot by yourself, checkout the cuckoo_integration branch of `github.com/jamu/MCEDP`_. You need a Windows operation system with the Windows SDK installed in order to build it. 
-There are two build-setups inside the project directory: Release and CuckooRelease. Release contains the standalone PwnyPot version, which can be used to test stuff directly without the whole setup with Cuckoo. CuckooRelease outputs MCEDP.dll which needs to be used with Cuckoo. 
+If you want to build PwnyPot by yourself, checkout the cuckoo_integration branch of `github.com/jamu/PwnyPot`_. You need a Windows operation system with the Windows SDK installed in order to build it. 
+There are two build-setups inside the project directory: Release and CuckooRelease. Release contains the standalone PwnyPot version, which can be used to test stuff directly without the whole setup with Cuckoo. CuckooRelease outputs PwnyPot.dll which needs to be used with Cuckoo. 
 The simplest way To start the building process is to execute the following Command:: 
     C:\Windows\Microsoft.NET\Framework\v4.X\MSBuild path_to_sln_file /p:Configuration=[CuckooRelease|Release]
 

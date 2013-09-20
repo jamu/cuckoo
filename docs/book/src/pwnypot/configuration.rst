@@ -28,7 +28,7 @@ General Section
 
     If set to 1 permanent DEP is enabled on the processes, in which PwnyPot gets injected to.
 
-**sehop** (not yet implemented)
+**sehop** 
    
     **Allowed Values: 0, 1**
 

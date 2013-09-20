@@ -23,12 +23,12 @@ Supporters
 Links
 =====
 
-    * `github.com/jamu/MCEDP`_
+    * `github.com/jamu/pwnypot`_
     * `github.com/jamu/cuckoo`_
     * `github.com/shjalayeri/MCEDP`_
     * `honeynet.net`_
 
-.. _`github.com/jamu/MCEDP`: http://github.com/jamu/MCEDP
+.. _`github.com/jamu/pwnypot`: http://github.com/jamu/pwnypot
 .. _`github.com/jamu/cuckoo`: http://github.com/jamu/cuckoo
 .. _`github.com/shjalayeri/MCEDP`: http://github.com/shjalayeri/MCEDP
 .. _`honeynet.net`: http://www.honeynet.net
