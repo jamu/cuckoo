@@ -16,11 +16,12 @@ The main features of PwnyPot are:
 
 General Protections
 ===================
+
   The following protections can be enabled with PwnyPot:
 
     * Null Page Allocation
 
-      Null Page Allocation is prevented by allocation the Null Page before anything else does it in the thread. 
+      Null Page Allocation is prevented by allocation the Null Page before anything else of the process does it.
 
 
     * Heap Spray Mitigation
@@ -40,11 +41,14 @@ General Protections
 .. _Technet Blog: http://blogs.technet.com/b/srd/archive/2009/02/02/preventing-the-exploitation-of-seh-overwrites-with-sehop.aspx
 .. _Uninformed: http://www.uninformed.org/?v=5&a=2&t=txt)
 
+
 .. _shellcode_detection:
 
-Shellcode Detection by doing Export Address Table Validation
+Shellcode Detection through Export Address Table Validation
 ============================================================
-  
+   
+   Each access to the Export Address Table is validated. This feature can be turned on / off with the configuration variable eta_validation. The variable eta_module specifies the module.   
+
 
 .. _shellcode_dumps:
 
