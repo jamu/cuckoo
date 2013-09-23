@@ -89,6 +89,7 @@ class Pwnypot(Processing):
                         binaries[file_name]["sockets"] = []
                         binaries[file_name]["connections"] = OrderedDict()
                         binaries[file_name]["apis"] = []
+                        binaries[file_name]["seh"] = []
                         # parse analysis information types
                         for row in xml.iter("row"):
                             analysis_type = row.attrib.get('type')
@@ -179,7 +180,19 @@ class Pwnypot(Processing):
                                     fd.close()
                                 
                             if analysis_type == API:
-                                binaries[file_name]["apis"].append("API: %s - Parameter: %s" %(row.attrib.get("api"),row.attrib.get("value")))
+                                if row.attrib.get("api")!=None:
+                                    binaries[file_name]["apis"].append("API: %s - Parameter: %s" %(row.attrib.get("api"),row.attrib.get("value")))
+
+                            if analysis_type == SEH:
+                                seh = {}
+                                seh["chain_start"] = row.attrib.get("chain_start")
+
+                                seh["invalid_handler_address"] = row[0].attrib.get("address")
+                                seh["invalid_handler_value"] = row[0].attrib.get("value")
+
+                                seh["next_address"] = row[1].attrib.get("address")
+                                seh["next_value"] = row[1].attrib.get("value")
+                                binaries[file_name]["seh"].append(seh)
 
                         log_path = os.path.join(dir_name,file_name.replace("ShellcodeAnalysis","LogShellcode"))
                         if os.path.exists(log_path):
