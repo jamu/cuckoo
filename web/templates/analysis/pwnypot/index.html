@@ -11,6 +11,9 @@
             <li><a href="#{{value.pid}}" data-toggle="tab">PID {{value.pid}}</a></li>
             {% endif %}
             {% endfor %}
+            {% if analysis.pwnypot.executed_shellcode %}
+            <li><a href="#behavior" data-toggle="tab">Shellcode Execution</a></li>
+            {% endif %}
         </ul>
     </div>
 

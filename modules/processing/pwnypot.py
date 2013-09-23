@@ -40,6 +40,7 @@ class Pwnypot(Processing):
         results = {}
         log_files = {}
         binaries = {}
+        results["executed_shellcode"] = False
 
         # walk through all files in analysis directory
         for dir_name, dir_names, file_names in os.walk(self.logs_path):
@@ -125,6 +126,8 @@ class Pwnypot(Processing):
 
                             if analysis_type == EXEC:
                                 binaries[file_name]["execs"].append("Executing Command: %s" % row.attrib.get("exec_cmd"))
+                                if row.attrib.get("exec_pid")!=None:
+                                    results["executed_shellcode"] = True
 
                             if analysis_type == URL_DOWNLOAD_TO_FILE:
                                 binaries[file_name]["downloads"].append("Download url: %s filename: %s" % (row.attrib.get("download_url"), row.attrib.get("download_filename")))
