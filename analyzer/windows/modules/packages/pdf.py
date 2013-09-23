@@ -16,7 +16,7 @@ class PDF(Package):
             os.path.join(os.getenv("ProgramFiles"), "Adobe", "Reader 8.0", "Reader", "AcroRd32.exe"),
             os.path.join(os.getenv("ProgramFiles"), "Adobe", "Reader 9.0", "Reader", "AcroRd32.exe"),
             os.path.join(os.getenv("ProgramFiles"), "Adobe", "Reader 10.0", "Reader", "AcroRd32.exe"),
-            os.path.join(os.getenv("ProgramFiles"), "Adobe", "Reader 11.0", "Reader", "AcroRd32.exe"),
+            os.path.join(os.getenv("ProgramFiles"), "Adobe", "Reader 11.0", "Reader", "AcroRd32.exe")
         ]
 
         for path in paths:
@@ -42,7 +42,7 @@ class PDF(Package):
 
         if not free and suspended:
             if dll:
-                p.inject(os.path.join("dll",dll))
+                p.inject(os.path.join("dll", dll))
             else:
                 p.inject()
             p.resume()

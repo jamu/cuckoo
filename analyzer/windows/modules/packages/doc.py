@@ -45,7 +45,7 @@ class DOC(Package):
 
         if not free and suspended:
             if dll:
-                p.inject(os.path.join("dll",dll))
+                p.inject(os.path.join("dll", dll))
             else:
                 p.inject()
             p.resume()

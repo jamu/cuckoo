@@ -24,9 +24,10 @@ class HTML(Package):
 
         if not free and suspended:
             if dll:
-                p.inject(os.path.join("dll",dll))
+                p.inject(os.path.join("dll", dll))
             else:
-                p.resume()
+                p.inject()
+            p.resume()
             return p.pid
         else:
             return None
