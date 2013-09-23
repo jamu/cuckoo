@@ -28,9 +28,22 @@
                 <table class="table table-striped table-bordered">
                     <tr>
                         <td>
-                            {% for item in value.apis %}
-                            {{item}}<br>
-                            {% endfor %}            
+                            <table class="table table-striped table-bordered">
+                                <tr>
+                                    <th>Function</th>
+                                    <th>Parameter</th>
+                                </tr>
+                                {% for item in value.apis %}
+                                <tr>
+                                    <td>
+                                        {{item.function}}
+                                    </td>
+                                    <td>
+                                        {{item.param}}
+                                    </td>
+                                </tr>
+                                {% endfor %}   
+                            </table>         
                         </td>                        
                     </tr>
                 </table>   

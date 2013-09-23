@@ -181,7 +181,10 @@ class Pwnypot(Processing):
                                 
                             if analysis_type == API:
                                 if row.attrib.get("api")!=None:
-                                    binaries[file_name]["apis"].append("API: %s - Parameter: %s" %(row.attrib.get("api"),row.attrib.get("value")))
+                                    api = {}
+                                    api["function"] = row.attrib.get("api")
+                                    api["param"] = row.attrib.get("value")
+                                    binaries[file_name]["apis"].append(api)
 
                             if analysis_type == SEH:
                                 seh = {}
