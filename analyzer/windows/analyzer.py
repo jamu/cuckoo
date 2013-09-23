@@ -143,10 +143,14 @@ class PipeHandler(Thread):
     decides what to do with them.
     """
 
-    def __init__(self, h_pipe):
+    def __init__(self, h_pipe, dll):
         """@param h_pipe: PIPE to read."""
         Thread.__init__(self)
         self.h_pipe = h_pipe
+        if dll == None:
+            dll = "cuckoomon.dll"
+        self.dll = dll
+
 
     def run(self):
         """Run handler.
@@ -198,7 +202,7 @@ class PipeHandler(Thread):
                 data = command[8:]
 
                 process_id = thread_id = None
-                dll = os.path.join("dll", "cuckoomon.dll")
+                dll = os.path.join("dll", self.dll)
                 if not "," in data:
                     if data.isdigit():
                         process_id = int(data)
@@ -213,9 +217,8 @@ class PipeHandler(Thread):
                         thread_id = int(param)                    
                     else:
                         thread_id = None
-                        if isinstance(param, str):                        
-                            if "PwnyPot.dll" in param:
-                                dll = os.path.join("dll", "PwnyPot.dll")                        
+                        if isinstance(param, str):     
+                            dll = os.path.join("dll", param)                        
 
 
                 if process_id:
@@ -302,11 +305,12 @@ class PipeServer(Thread):
     new processes being spawned and for files being created or deleted.
     """
 
-    def __init__(self, pipe_name=PIPE):
+    def __init__(self, dll, pipe_name=PIPE,):
         """@param pipe_name: Cuckoo PIPE server name."""
         Thread.__init__(self)
         self.pipe_name = pipe_name
         self.do_run = True
+        self.dll = dll
 
     def stop(self):
         """Stop PIPE server."""
@@ -335,7 +339,7 @@ class PipeServer(Thread):
             # If we receive a connection to the pipe, we invoke the handler.
             if KERNEL32.ConnectNamedPipe(h_pipe, None) or \
                     KERNEL32.GetLastError() == ERROR_PIPE_CONNECTED:
-                handler = PipeHandler(h_pipe)
+                handler = PipeHandler(h_pipe, self.dll)
                 handler.daemon = True
                 handler.start()
             else:
@@ -387,7 +391,7 @@ class Analyzer:
         # Initialize and start the Pipe Servers. This is going to be used for
         # communicating with the injected and monitored processes.
         for x in xrange(self.PIPE_SERVER_COUNT):
-            self.pipes[x] = PipeServer()
+            self.pipes[x] = PipeServer(self.get_options().get("dll"), PIPE)
             self.pipes[x].daemon = True
             self.pipes[x].start()
 
