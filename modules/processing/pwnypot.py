@@ -47,7 +47,7 @@ class Pwnypot(Processing):
             for file_name in file_names:
                 file_path = os.path.join(dir_name, file_name)
                 # read generel Logfiles
-                if "LogInfo" in file_name or "Rop" in file_name:                        
+                if "LogInfo" in file_name or "Rop" in file_name or "LogShellcode" in file_name:                        
                     fd = open(file_path,"r")
                     file_content = fd.read()
                     fd.close()
@@ -68,11 +68,11 @@ class Pwnypot(Processing):
                         if len(file_content)>0:
                             # read disassmbly of shellcode
                             binaries[file_name]["shellcode"] = File(file_path=bin_path).get_all()
-                            disass_path = os.path.join(dir_name,file_name.replace("Analysis","Disass"))                        
-                            if os.path.exists(disass_path):
-                                fd = open(disass_path,"r")
-                                binaries[file_name]["disass"] = fd.read()
-                                fd.close()
+                    disass_path = os.path.join(dir_name,file_name.replace("Analysis","Disass"))                        
+                    if os.path.exists(disass_path):
+                        fd = open(disass_path,"r")
+                        binaries[file_name]["disass"] = fd.read()
+                        fd.close()
                     
                     if (binaries[file_name].get("shellcode") == None):
                         binaries[file_name]["shellcode"] = None
@@ -200,7 +200,7 @@ class Pwnypot(Processing):
                         log_path = os.path.join(dir_name,file_name.replace("ShellcodeAnalysis","LogShellcode"))
                         if os.path.exists(log_path):
                             fd = open(log_path, "rb")
-                            binaries[file_name]["log"] = fd.read()
+                            binaries[file_name]["log_files"] = fd.read()
                             fd.close()
                                                
 
