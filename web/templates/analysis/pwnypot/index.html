@@ -7,7 +7,7 @@
             <li class="active"><a href="#logs" data-toggle="tab">Log-files</a></li>
             {% endif %}
             {% for key,value in analysis.pwnypot.binaries.iteritems %}
-            {% if value.shellcode or value.rop_chains or value.apis or value.seh %}
+            {% if value.shellcode or value.rop_chains or value.apis or value.seh or value.wpms %}
             <li><a href="#{{value.pid}}" data-toggle="tab">PID {{value.pid}}</a></li>
             {% endif %}
             {% endfor %}
@@ -19,10 +19,10 @@
 
     <div class="tab-content">
         {% for key,value in analysis.pwnypot.binaries.iteritems %}
-        {% if value.shellcode or value.rop_chains or value.apis or value.seh %}
+        {% if value.shellcode or value.rop_chains or value.apis or value.seh or value.wpms %}
         <div class="tab-pane fade in" id="{{value.pid}}">
             <section id="#pid_{{value.pid}}">
-                {% if value.apis or value.seh %}
+                {% if value.apis or value.seh or value.wpms %}
                 <h5>API Calls regarding ASLR/DEP mitigation</h5>
                 {% if value.apis %}
                 <table class="table table-striped table-bordered">
@@ -62,8 +62,30 @@
                                     <th>Next-Field</th>
                                 </tr>
                                     <tr>
-                                        <td>[{{exception.invalid_handler_address}}] {{exception.invalid_handler_value}}</td>
-                                        <td>[{{exception.next_address}}] {{exception.next_value}}</td>
+                                        <td>[0x{{exception.invalid_handler_address}}] 0x{{exception.invalid_handler_value}}</td>
+                                        <td>[0x{{exception.next_address}}] 0x{{exception.next_value}}</td>
+                                    </tr>
+                            </table>    
+                            {% endfor %}          
+                        </td>                        
+                    </tr>
+                </table>
+                {% endif %}   
+
+                {% if value.wpms %}
+                <table class="table table-striped table-bordered">
+                    <tr>
+                        <td>
+                            <h5>WriteProcessMemory Attack</h5>
+                            {% for wpm in value.wpms %}
+                            <table class="table table-striped table-bordered">
+                                <tr>
+                                    <th>Address</th>
+                                    <th>Buffer value</th>
+                                </tr>
+                                    <tr>
+                                        <td>0x{{wpm.address}}</td>
+                                        <td>{{wpm.buffer}}</td>
                                     </tr>
                             </table>    
                             {% endfor %}          

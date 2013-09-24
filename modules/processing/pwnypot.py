@@ -25,7 +25,7 @@ ACCEPT = "7"
 SEND = "8"
 RECV = "9"
 API = "10"
-HOTPATCH = "11"
+WPM = "11"
 SEH = "12"
 SOCKET_RANGE = range(3,10)
 
@@ -89,6 +89,7 @@ class Pwnypot(Processing):
                         binaries[file_name]["sockets"] = []
                         binaries[file_name]["connections"] = OrderedDict()
                         binaries[file_name]["apis"] = []
+                        binaries[file_name]["wpms"] = []
                         binaries[file_name]["seh"] = []
                         # parse analysis information types
                         for row in xml.iter("row"):
@@ -185,6 +186,12 @@ class Pwnypot(Processing):
                                     api["function"] = row.attrib.get("api")
                                     api["param"] = row.attrib.get("value")
                                     binaries[file_name]["apis"].append(api)
+
+                            if analysis_type == WPM:
+                                wpm = {}
+                                wpm["address"] = row.attrib.get("address")
+                                wpm["buffer"] = row.attrib.get("data")
+                                binaries[file_name]["wpms"].append(wpm)
 
                             if analysis_type == SEH:
                                 seh = {}
