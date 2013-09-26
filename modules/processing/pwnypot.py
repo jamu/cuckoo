@@ -191,6 +191,8 @@ class Pwnypot(Processing):
                                 wpm = {}
                                 wpm["address"] = row.attrib.get("address")
                                 wpm["buffer"] = row.attrib.get("data")
+                                wpm["module"] = row.attrib.get("module")
+                                wpm["address_info"] = row.attrib.get("address_info")
                                 binaries[file_name]["wpms"].append(wpm)
 
                             if analysis_type == SEH:
