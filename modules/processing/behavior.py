@@ -8,7 +8,8 @@ import datetime
 
 from lib.cuckoo.common.abstracts import Processing
 from lib.cuckoo.common.utils import convert_to_printable, logtime
-from lib.cuckoo.common.netlog import NetlogParser
+from lib.cuckoo.common.utils import cleanup_value
+from lib.cuckoo.common.netlog import NetlogParser, BsonParser
 from lib.cuckoo.common.config import Config
 
 log = logging.getLogger(__name__)
@@ -35,14 +36,29 @@ class ParseProcessLog(list):
 
     def parse_first_and_reset(self):
         self.fd = open(self._log_path, "rb")
-        self.parser = NetlogParser(self)
-        self.parser.read_next_message()
+
+        if self._log_path.endswith(".bson"):
+            self.parser = BsonParser(self)
+        elif self._log_path.endswith(".raw"):
+            self.parser = NetlogParser(self)
+        else:
+            self.fd.close()
+            self.fd = None
+            return
+
+        # get the process information from file to determine
+        # process id (file names)
+        while not self.process_id:
+            self.parser.read_next_message()
+
         self.fd.seek(0)
 
     def read(self, length):
-        if length == 0: return b''
+        if length == 0:
+            return b''
         buf = self.fd.read(length)
-        if not buf or len(buf) != length: raise EOFError()
+        if not buf or len(buf) != length:
+            raise EOFError()
         return buf
 
     def __iter__(self):
@@ -57,7 +73,12 @@ class ParseProcessLog(list):
         return "ParseProcessLog {0}".format(self._log_path)
 
     def __nonzero__(self):
-        return True
+        return self.wait_for_lastcall()
+
+    def reset(self):
+        self.parsecount += 1
+        self.fd.seek(0)
+        self.lastcall = None
 
     def compare_calls(self, a, b):
         """Compare two calls for equality. Same implementation as before netlog.
@@ -84,10 +105,11 @@ class ParseProcessLog(list):
         return True
 
     def next(self):
+        if not self.fd: raise StopIteration()
+
         x = self.wait_for_lastcall()
         if not x:
-            self.parsecount += 1
-            self.fd.seek(0)
+            self.reset()
             raise StopIteration()
 
         nextcall, self.lastcall = self.lastcall, None
@@ -107,7 +129,7 @@ class ParseProcessLog(list):
     def log_thread(self, context, pid):
         pass
 
-    def log_call(self, context, apiname, modulename, arguments):
+    def log_call(self, context, apiname, category, arguments):
         apiindex, status, returnval, tid, timediff = context
 
         current_time = self.first_seen + datetime.timedelta(0, 0, timediff*1000)
@@ -115,10 +137,13 @@ class ParseProcessLog(list):
 
         self.lastcall = self._parse([timestring,
                                      tid,
-                                     modulename,
+                                     category,
                                      apiname, 
                                      status,
                                      returnval] + arguments)
+
+    def log_error(self, emsg):
+        log.warning("ParseProcessLog error condition on log %s: %s", str(self._log_path), emsg)
 
     def _parse(self, row):
         """Parse log row.
@@ -145,7 +170,7 @@ class ParseProcessLog(list):
             argument = {}
 
             # Split the argument name with its value based on the separator.
-            try:                
+            try:
                 (arg_name, arg_value) = row[index]
             except ValueError as e:
                 log.debug("Unable to parse analysis row argument (row=%s): %s", row[index], e)
@@ -153,11 +178,7 @@ class ParseProcessLog(list):
 
             argument["name"] = arg_name
 
-            arg_value = str(arg_value)
-            if arg_value[:4] == "\\??\\":
-                arg_value = arg_value[4:]
-
-            argument["value"] = convert_to_printable(arg_value)
+            argument["value"] = convert_to_printable(cleanup_value(arg_value))
             arguments.append(argument)
 
         call["timestamp"] = timestamp
@@ -169,7 +190,7 @@ class ParseProcessLog(list):
         if isinstance(return_value, int):
             call["return"] = "0x%.08x" % return_value
         else:
-            call["return"] = convert_to_printable(str(return_value))
+            call["return"] = convert_to_printable(cleanup_value(return_value))
 
         call["arguments"] = arguments
         call["repeated"] = 0
@@ -204,9 +225,6 @@ class Processes:
 
             if os.path.isdir(file_path):
                 continue
-            
-            if not file_path.endswith(".raw"):
-                continue
 
             # Skipping the current log file if it's too big.
             if os.stat(file_path).st_size > self.cfg.processing.analysis_size_limit:
@@ -237,7 +255,7 @@ class Summary:
     """Generates summary information."""
 
     key = "summary"
-    
+
     def __init__(self):
         self.keys = []
         self.mutexes = []
@@ -269,7 +287,7 @@ class Summary:
                 if registry == known_handle["handle"]:
                     name = known_handle["name"] + "\\"
 
-        self.handles.append({"handle" : handle, "name" : name + subkey})
+        self.handles.append({"handle": handle, "name": name + subkey})
         return name + subkey
 
     def event_apicall(self, call, process):
@@ -343,13 +361,13 @@ class Enhanced(object):
         self.details = details
         self.filehandles = {}
         self.keyhandles = {
-            "0x80000000" : "HKEY_CLASSES_ROOT\\",
-            "0x80000001" : "HKEY_CURRENT_USER\\",
-            "0x80000002" : "HKEY_LOCAL_MACHINE\\",
-            "0x80000003" : "HKEY_USERS\\",
-            "0x80000004" : "HKEY_PERFORMANCE_DATA\\",
-            "0x80000005" : "HKEY_CURRENT_CONFIG\\",
-            "0x80000006" : "HKEY_DYN_DATA\\"
+            "0x80000000": "HKEY_CLASSES_ROOT\\",
+            "0x80000001": "HKEY_CURRENT_USER\\",
+            "0x80000002": "HKEY_LOCAL_MACHINE\\",
+            "0x80000003": "HKEY_USERS\\",
+            "0x80000004": "HKEY_PERFORMANCE_DATA\\",
+            "0x80000005": "HKEY_CURRENT_CONFIG\\",
+            "0x80000006": "HKEY_DYN_DATA\\"
         }
         self.modules = {}
         self.procedures = {}
@@ -445,7 +463,6 @@ class Enhanced(object):
         def _generic_handle_details(self, call, item):
             """
             Generic handling of api calls
-
             @call: the call dict
             @item: Generic item to process
             """
@@ -454,8 +471,8 @@ class Enhanced(object):
                 args = _load_args(call)
                 self.eid += 1
                 event = {
-                    "event" : item["event"],
-                    "object" : item["object"],
+                    "event": item["event"],
+                    "object": item["object"],
                     "timestamp": call["timestamp"],
                     "eid": self.eid,
                     "data": {}
@@ -465,9 +482,7 @@ class Enhanced(object):
                 return event
 
         def _generic_handle(self, data, call):
-            """
-            Generic handling of api calls
-            """
+            """Generic handling of api calls."""
             for item in data:
                 event = _generic_handle_details(self, call, item)
                 if event:
@@ -495,73 +510,73 @@ class Enhanced(object):
 
         gendat = [
             {
-                "event" : "move",
-                "object" : "file",
-                "apis" : [
+                "event": "move",
+                "object": "file",
+                "apis": [
                     "MoveFileWithProgressW",
                     "MoveFileExA",
                     "MoveFileExW"
                 ],
-                "args" : [
+                "args": [
                     ("from", "ExistingFileName"),
                     ("to", "NewFileName")
                 ]
             },
             {
-                "event" : "copy",
-                "object" : "file",
-                "apis" : [
+                "event": "copy",
+                "object": "file",
+                "apis": [
                     "CopyFileA",
                     "CopyFileW",
                     "CopyFileExW",
                     "CopyFileExA"
                 ],
-                "args" : [
+                "args": [
                     ("from", "ExistingFileName"),
                     ("to", "NewFileName")
                 ]
             },
             {
-                "event" : "delete",
-                "object" : "file",
-                "apis" : [
+                "event": "delete",
+                "object": "file",
+                "apis": [
                     "DeleteFileA",
                     "DeleteFileW",
                     "NtDeleteFile"
                 ],
-                "args" : [("file", "FileName")]
+                "args": [("file", "FileName")]
             },
             {
-                "event" : "delete",
-                "object" : "dir",
-                "apis" : [
+                "event": "delete",
+                "object": "dir",
+                "apis": [
                     "RemoveDirectoryA",
                     "RemoveDirectoryW"
                 ],
-                "args" : [("file", "DirectoryName")]
+                "args": [("file", "DirectoryName")]
             },
             {
-                "event" : "create",
-                "object" : "dir",
-                "apis" : [
+                "event": "create",
+                "object": "dir",
+                "apis": [
                     "CreateDirectoryW",
                     "CreateDirectoryExW"
                 ],
-                "args" : [("file", "DirectoryName")]
+                "args": [("file", "DirectoryName")]
             },
             {
-                "event" : "write",
-                "object" : "file",
-                "apis" : [
+                "event": "write",
+                "object": "file",
+                "apis": [
                     "URLDownloadToFileW",
                     "URLDownloadToFileA"
                 ],
-                "args" : [("file", "FileName")]
+                "args": [("file", "FileName")]
             },
             {
-                "event" : "execute",
-                "object" : "file",
-                "apis" : [
+                "event": "execute",
+                "object": "file",
+                "apis": [
                     "CreateProcessAsUserA",
                     "CreateProcessAsUserW",
                     "CreateProcessA",
@@ -569,12 +584,29 @@ class Enhanced(object):
                     "NtCreateProcess",
                     "NtCreateProcessEx"
                 ],
-                "args" : [("file", "FileName")]
+                "args": [("file", "FileName")]
             },
             {
-                "event" : "load",
-                "object" : "library",
-                "apis" : [
+                "event": "execute",
+                "object": "file",
+                "apis": [
+                    "CreateProcessInternalW",
+                ],
+                "args": [("file", "CommandLine")]
+            },
+            {
+                "event": "execute",
+                "object": "file",
+                "apis": [
+                    "ShellExecuteExA",
+                    "ShellExecuteExW",
+                ],
+                "args": [("file", "FilePath")]
+            },
+            {
+                "event": "load",
+                "object": "library",
+                "apis": [
                     "LoadLibraryA",
                     "LoadLibraryW",
                     "LoadLibraryExA",
@@ -582,92 +614,92 @@ class Enhanced(object):
                     "LdrLoadDll",
                     "LdrGetDllHandle"
                 ],
-                "args" : [
+                "args": [
                     ("file", "FileName"),
                     ("pathtofile", "PathToFile"),
                     ("moduleaddress", "BaseAddress")
                 ]
             },
             {
-                "event" : "findwindow",
-                "object" : "windowname",
-                "apis" : [
+                "event": "findwindow",
+                "object": "windowname",
+                "apis": [
                     "FindWindowA",
                     "FindWindowW",
                     "FindWindowExA",
                     "FindWindowExW"
                 ],
-                "args" : [
+                "args": [
                     ("classname", "ClassName"),
                     ("windowname", "WindowName")
                 ]
             },
             {
-                "event" : "read",
-                "object" : "file",
-                "apis" : [
+                "event": "read",
+                "object": "file",
+                "apis": [
                     "NtReadFile",
                     "ReadFile"
                 ],
-                "args" : []
+                "args": []
             },
             {
-                "event" : "write",
-                "object" : "file",
-                "apis" : ["NtWriteFile"],
-                "args" : []
+                "event": "write",
+                "object": "file",
+                "apis": ["NtWriteFile"],
+                "args": []
             },
             {
-                "event" : "delete",
-                "object" : "registry",
-                "apis" : [
+                "event": "delete",
+                "object": "registry",
+                "apis": [
                     "RegDeleteKeyA",
                     "RegDeleteKeyW"
                 ],
-                "args" : []
+                "args": []
             },
             {
-                "event" : "write",
-                "object" : "registry",
-                "apis" : [
+                "event": "write",
+                "object": "registry",
+                "apis": [
                     "RegSetValueExA",
                     "RegSetValueExW"
                 ],
-                "args" : [
+                "args": [
                     ("content", "Buffer"),
                     ("object", "object")
                 ]
             },
             {
-                "event" : "read",
-                "object" : "registry",
-                "apis" : [
+                "event": "read",
+                "object": "registry",
+                "apis": [
                     "RegQueryValueExA",
                     "RegQueryValueExW",
                     "NtQueryValueKey"
                 ],
-                "args" : []
+                "args": []
             },
             {
-                "event" : "delete",
-                "object" : "registry",
-                "apis" : [
+                "event": "delete",
+                "object": "registry",
+                "apis": [
                     "RegDeleteValueA",
                     "RegDeleteValueW",
                     "NtDeleteValueKey"
                 ],
-                "args" : []
+                "args": []
             },
             {
-                "event" : "create",
-                "object" : "windowshook",
-                "apis" : ["SetWindowsHookExA"],
-                "args" : [
+                "event": "create",
+                "object": "windowshook",
+                "apis": ["SetWindowsHookExA"],
+                "args": [
                     ("id", "HookIdentifier"),
                     ("moduleaddress", "ModuleAddress"),
                     ("procedureaddress", "ProcedureAddress")
                 ]
-            },                  
+            },
         ]
 
         # Not sure I really want this, way too noisy anyway and doesn't bring
@@ -845,5 +877,9 @@ class BehaviorAnalysis(Processing):
                 behavior[instance.key] = instance.run()
             except:
                 log.exception("Failed to run partial behavior class \"%s\"", instance.key)
+
+            # Reset the ParseProcessLog instances after each module
+            for process in behavior["processes"]:
+                process["calls"].reset()
 
         return behavior

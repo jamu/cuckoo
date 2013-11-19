@@ -12,14 +12,16 @@ class DOC(Package):
     """Word analysis package."""
 
     def get_path(self):
+        ms_office = os.path.join(os.getenv("ProgramFiles"),
+                                 "Microsoft Office")
         paths = [
-            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "WINWORD.EXE"),
-            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office11", "WINWORD.EXE"),
-            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office12", "WINWORD.EXE"),
-            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office14", "WINWORD.EXE"),
-            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office15", "WINWORD.EXE"),
-            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "WORDVIEW.EXE"),
-            os.path.join(os.getenv("ProgramFiles"), "Microsoft Office", "Office11", "WORDVIEW.EXE")
+            os.path.join(ms_office, "WINWORD.EXE"),
+            os.path.join(ms_office, "Office11", "WINWORD.EXE"),
+            os.path.join(ms_office, "Office12", "WINWORD.EXE"),
+            os.path.join(ms_office, "Office14", "WINWORD.EXE"),
+            os.path.join(ms_office, "Office15", "WINWORD.EXE"),
+            os.path.join(ms_office, "WORDVIEW.EXE"),
+            os.path.join(ms_office, "Office11", "WORDVIEW.EXE")
         ]
 
         for path in paths:
@@ -32,8 +34,10 @@ class DOC(Package):
         word = self.get_path()
         dll = self.options.get("dll")
         if not word:
-            raise CuckooPackageError("Unable to find any Microsoft Office Word executable available")
+            raise CuckooPackageError("Unable to find any Microsoft "
+                                     "Office Word executable available")
 
+        dll = self.options.get("dll", None)
         free = self.options.get("free", False)
         suspended = True
         if free:
@@ -41,13 +45,11 @@ class DOC(Package):
 
         p = Process()
         if not p.execute(path=word, args="\"%s\"" % path, suspended=suspended):
-            raise CuckooPackageError("Unable to execute initial Microsoft Office Word process, analysis aborted")
+            raise CuckooPackageError("Unable to execute initial Microsoft "
+                                     "Office Word process, analysis aborted")
 
         if not free and suspended:
-            if dll:
-                p.inject(os.path.join("dll", dll))
-            else:
-                p.inject()
+            p.inject(dll)
             p.resume()
             return p.pid
         else:

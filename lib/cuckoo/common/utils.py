@@ -38,8 +38,9 @@ def create_folder(root=".", folder=None):
             try:
                 os.makedirs(folder_path)
             except OSError:
-                raise CuckooOperationalError("Unable to create folder: %s"
-                                            % folder_path)
+                raise CuckooOperationalError("Unable to create folder: %s" %
+                                             folder_path)
+
 
 def delete_folder(folder):
     """Delete a folder and all its subdirectories.
@@ -50,12 +51,14 @@ def delete_folder(folder):
         try:
             shutil.rmtree(folder)
         except OSError:
-            raise CuckooOperationalError("Unable to delete folder: {0}".format(folder))
+            raise CuckooOperationalError("Unable to delete folder: "
+                                         "{0}".format(folder))
 
 
 # don't allow all characters in "string.printable", as newlines, carriage
 # returns, tabs, \x0b, and \x0c may mess up reports
-PRINTABLE_CHARACTERS = string.letters + string.digits + string.punctuation + " \t"
+PRINTABLE_CHARACTERS = (string.letters + string.digits +
+                        string.punctuation + " \t\r\n")
 
 
 def convert_char(c):
@@ -66,7 +69,8 @@ def convert_char(c):
     if c in PRINTABLE_CHARACTERS:
         return c
     else:
-        return r"\x%02x" % ord(c)
+        return "\\x%02x" % ord(c)
+
 
 def is_printable(s):
     """ Test if a string is printable."""
@@ -117,18 +121,15 @@ def store_temp_file(filedata, filename):
 
     tmp_dir = tempfile.mkdtemp(prefix="upload_", dir=targetpath)
     tmp_file_path = os.path.join(tmp_dir, filename)
-    tmp_file = open(tmp_file_path, "wb")
-    
-    # if filedata is file object, do chunked copy
-    if hasattr(filedata, "read"):
-        chunk = filedata.read(1024)
-        while chunk:
-            tmp_file.write(chunk)
+    with open(tmp_file_path, "wb") as tmp_file:
+        # if filedata is file object, do chunked copy
+        if hasattr(filedata, "read"):
             chunk = filedata.read(1024)
-    else:
-        tmp_file.write(filedata)
-
-    tmp_file.close()
+            while chunk:
+                tmp_file.write(chunk)
+                chunk = filedata.read(1024)
+        else:
+            tmp_file.write(filedata)
 
     return tmp_file_path
 
@@ -158,7 +159,8 @@ class TimeoutTransport(xmlrpclib.Transport):
 
     def make_connection(self, *args, **kwargs):
         conn = xmlrpclib.Transport.make_connection(self, *args, **kwargs)
-        if self.timeout != None: conn.timeout = self.timeout
+        if not self.timeout is None:
+            conn.timeout = self.timeout
         return conn
 
 class Singleton(type):
@@ -188,51 +190,65 @@ def time_from_cuckoomon(s):
     """
     return datetime.strptime(s, "%Y-%m-%d %H:%M:%S,%f")
 
-def to_unicode(str):
+def to_unicode(s):
     """Attempt to fix non uft-8 string into utf-8. It tries to guess input encoding,
     if fail retry with a replace strategy (so undetectable chars will be escaped).
     @see: fuller list of encodings at http://docs.python.org/library/codecs.html#standard-encodings
     """
 
-    def brute_enc(str):
+    def brute_enc(s2):
         """Trying to decode via simple brute forcing."""
-        result = None
         encodings = ("ascii", "utf8", "latin1")
         for enc in encodings:
-            if result:
-                break
             try:
-                result = unicode(str, enc)
+                return unicode(s2, enc)
             except UnicodeDecodeError:
                 pass
-        return result
+        return None
 
-    def chardet_enc(str):
+    def chardet_enc(s2):
         """Guess encoding via chardet."""
-        result = None
-        enc = chardet.detect(str)["encoding"]
+        enc = chardet.detect(s2)["encoding"]
 
         try:
-            result = unicode(str, enc)
+            return unicode(s2, enc)
         except UnicodeDecodeError:
             pass
-
-        return result
+        return None
 
     # If already in unicode, skip.
-    if isinstance(str, unicode):
-        return str
+    if isinstance(s, unicode):
+        return s
 
     # First try to decode against a little set of common encodings.
-    result = brute_enc(str)
+    result = brute_enc(s)
 
     # Try via chardet.
     if not result:
-        result = chardet_enc(str)
+        result = chardet_enc(s)
 
     # If not possible to convert the input string, try again with
     # a replace strategy.
     if not result:
-        result = unicode(str, errors="replace")
+        result = unicode(s, errors="replace")
 
     return result
+
+def cleanup_value(v):
+    """Cleanup utility function, strips some unwanted parts from values."""
+    v = str(v)
+    if v.startswith("\\??\\"):
+        v = v[4:]
+    return v
+
+def sanitize_filename(x):
+    """Kind of awful but necessary sanitizing of filenames to 
+    get rid of unicode problems."""
+    out = ""
+    for c in x:
+        if c in string.letters + string.digits + " _-.":
+            out += c
+        else:
+            out += "_"
+
+    return out
