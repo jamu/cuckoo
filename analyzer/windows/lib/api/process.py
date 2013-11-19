@@ -329,11 +329,8 @@ class Process:
             config.write("dll-path={0}\n".format(dll))
             config.write("analyzer={0}\n".format(os.getcwd()))
             config.write("first-process={0}\n".format(Process.first_process))
-<<<<<<< HEAD
-=======
             config.write("startup-time={0}\n".format(Process.startup_time))
 
->>>>>>> upstream/development
             Process.first_process = False
 
         if apc or self.suspended:

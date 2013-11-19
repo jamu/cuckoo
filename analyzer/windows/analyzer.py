@@ -246,30 +246,18 @@ class PipeHandler(Thread):
                         process_id = int(data)
                 elif len(data.split(",")) == 2:
                     process_id, param = data.split(",")
-<<<<<<< HEAD
-=======
                     thread_id = None
->>>>>>> upstream/development
                     if process_id.isdigit():
                         process_id = int(process_id)
                     else:
                         process_id = None
 
                     if param.isdigit():
-<<<<<<< HEAD
-                        thread_id = int(param)                    
-                    else:
-                        thread_id = None
-                        if isinstance(param, str):     
-                            dll = os.path.join("dll", param)                        
-
-=======
                         thread_id = int(param)
                     else:
                         # XXX: Expect a new DLL as a message parameter?
                         if isinstance(param, str):
                             dll = param
->>>>>>> upstream/development
 
                 if process_id:
                     if process_id not in (PID, PPID):
@@ -295,19 +283,11 @@ class PipeHandler(Thread):
                                 # If we have both pid and tid, then we can use
                                 # apc to inject
                                 if process_id and thread_id:
-<<<<<<< HEAD
-                                    proc.inject(dll, True)
-                                else:
-                                    # we inject using CreateRemoteThread, this
-                                    # needs the waiting in order to make sure no
-                                    # race conditions occur
-=======
                                     proc.inject(dll, apc=True)
                                 else:
                                     # we inject using CreateRemoteThread, this
                                     # needs the waiting in order to make sure
                                     # no race conditions occur
->>>>>>> upstream/development
                                     proc.inject(dll)
                                     wait = True
 

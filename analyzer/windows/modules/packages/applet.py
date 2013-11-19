@@ -66,14 +66,7 @@ class Applet(Package):
                                      "Explorer process, analysis aborted")
 
         if not free and suspended:
-<<<<<<< HEAD
-            if dll:
-                p.inject(os.path.join("dll", dll))
-            else:
-                p.inject()
-=======
             p.inject(dll)
->>>>>>> upstream/development
             p.resume()
             return p.pid
         else:
